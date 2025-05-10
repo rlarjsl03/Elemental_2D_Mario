@@ -1,0 +1,137 @@
+#include <SFML/Graphics.hpp>
+#include <vector>
+
+// 맵 정보: 1 = 블록, 0 = 빈 공간
+const int LEVEL_WIDTH = 16;
+const int LEVEL_HEIGHT = 12;
+const int TILE_SIZE = 50;
+
+int level[LEVEL_HEIGHT][LEVEL_WIDTH] = {
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+class Player {
+public:
+    sf::RectangleShape shape;
+    sf::Vector2f velocity;
+    bool onGround = false;
+
+    Player() {
+        shape.setSize(sf::Vector2f(40, 40));
+        shape.setFillColor(sf::Color::Red);
+        shape.setPosition(100, 100);
+    }
+
+    void update(float dt) {
+        const float speed = 200.0f;
+        const float gravity = 800.0f;
+        const float jumpStrength = -400.0f;
+
+        // 수평 이동
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+            velocity.x = -speed;
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+            velocity.x = speed;
+        else
+            velocity.x = 0;
+
+        // 점프
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && onGround) {
+            velocity.y = jumpStrength;
+            onGround = false;
+        }
+
+        // 중력 적용
+        velocity.y += gravity * dt;
+
+        // 이동 및 충돌 처리
+        shape.move(velocity.x * dt, 0);
+        checkCollision(true);
+
+        shape.move(0, velocity.y * dt);
+        checkCollision(false);
+    }
+
+    void checkCollision(bool horizontal) {
+        sf::FloatRect playerBounds = shape.getGlobalBounds();
+
+        onGround = false;
+        for (int y = 0; y < LEVEL_HEIGHT; ++y) {
+            for (int x = 0; x < LEVEL_WIDTH; ++x) {
+                if (level[y][x] == 1) {
+                    sf::FloatRect block(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    if (playerBounds.intersects(block)) {
+                        if (horizontal) {
+                            if (velocity.x > 0) shape.setPosition(block.left - playerBounds.width, shape.getPosition().y);
+                            else if (velocity.x < 0) shape.setPosition(block.left + block.width, shape.getPosition().y);
+                            velocity.x = 0;
+                        }
+                        else {
+                            if (velocity.y > 0) {
+                                shape.setPosition(shape.getPosition().x, block.top - playerBounds.height);
+                                velocity.y = 0;
+                                onGround = true;
+                            }
+                            else if (velocity.y < 0) {
+                                shape.setPosition(shape.getPosition().x, block.top + block.height);
+                                velocity.y = 0;
+                            }
+                        }
+                        playerBounds = shape.getGlobalBounds();
+                    }
+                }
+            }
+        }
+    }
+};
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode(800, 600), "2D Mario - SFML");
+    window.setFramerateLimit(60);
+
+    Player player;
+
+    sf::Clock clock;
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        float dt = clock.restart().asSeconds();
+
+        player.update(dt);
+
+        window.clear(sf::Color::Cyan);
+
+        // 타일 맵 렌더링
+        for (int y = 0; y < LEVEL_HEIGHT; ++y) {
+            for (int x = 0; x < LEVEL_WIDTH; ++x) {
+                if (level[y][x] == 1) {
+                    sf::RectangleShape tile(sf::Vector2f(TILE_SIZE, TILE_SIZE));
+                    tile.setPosition(x * TILE_SIZE, y * TILE_SIZE);
+                    tile.setFillColor(sf::Color::Green);
+                    window.draw(tile);
+                }
+            }
+        }
+
+        window.draw(player.shape);
+        window.display();
+    }
+
+    return 0;
+}

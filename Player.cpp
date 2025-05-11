@@ -54,21 +54,6 @@ int main() {
 			}
 			else if (Keyboard::isKeyPressed(Keyboard::Escape) == true) {
 				game.getWindow()->close();
-			switch (event.type) {
-			case Event::Closed:
-				window.close();
-				break;
-			case Event::KeyPressed:
-				if (Keyboard::isKeyPressed(Keyboard::Escape) == true) {
-					window.close();
-				}
-				Keyboard a;
-				Keyboard::isKeyPressed(a) == true;
-				player.move(a);
-				break;
-			default:
-				break;
-			}
 			game.setWindow();
 			game.getWindow();
 		}

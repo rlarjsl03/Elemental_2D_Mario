@@ -1,6 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
+using namespace sf;
+
 class Player {
 private:
     sf::CircleShape shape;
@@ -18,20 +20,21 @@ public:
         shape.setPosition(300.0f, 100.0f);  // 공중에서 시작
     }
 
-    // 좌우 이동만 처리
+	// 키 입력 처리
     void handleInput(float deltaTime) {
         sf::Vector2f direction(0.f, 0.f);
-
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
             direction.x -= 1.f;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
             direction.x += 1.f;
-
         shape.move(direction * speed * deltaTime);
-
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && isOnGround) {
             velocity.y = jumpPower;
             isOnGround = false;
+        }
+        else if (Keyboard::isKeyPressed(Keyboard::Escape)) {
+			// 게임 종료
+			exit(0);
         }
     }
 
@@ -45,7 +48,9 @@ public:
         if (bottom >= groundY) {
             shape.setPosition(shape.getPosition().x, groundY - shape.getRadius() * 2);
             velocity.y = 0;
-        }
+            isOnGround = true;
+        } else
+            isOnGround = false;
     }
 
     void draw(sf::RenderWindow& window) {

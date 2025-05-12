@@ -8,6 +8,8 @@ private:
     float speed = 200.0f;    // 좌우 이동 속도
     float gravity = 500.0f;  // 중력 가속도
     float groundY = 500.0f;  // 바닥 위치 (y 좌표)
+    float jumpPower = -300.0f; // 점프 시 위로 가는 속도
+    bool isOnGround = false;  // 바닥에 있는지 여부
 
 public:
     Player() {
@@ -26,6 +28,11 @@ public:
             direction.x += 1.f;
 
         shape.move(direction * speed * deltaTime);
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && isOnGround) {
+            velocity.y = jumpPower;
+            isOnGround = false;
+        }
     }
 
     // 중력 적용

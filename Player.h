@@ -20,7 +20,7 @@ public:
     Player() {
         if (!texture.loadFromFile("mario-2d.png")) {
             // 실패 시 대체 방법 (예: 색상 표시용 도형 만들기 등)
-            throw std::runtime_error("이미지를 불러올 수 없습니다: character.png");
+            throw std::runtime_error("이미지를 불러올 수 없습니다: mario_2d.png");
         }
         sprite.setTexture(texture);
         sprite.setScale(0.1f, 0.1f);  // 크기 조절 (필요에 따라)

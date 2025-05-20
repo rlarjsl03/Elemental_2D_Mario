@@ -9,7 +9,8 @@ int main() {
    RenderWindow window(VideoMode(800, 600), "Player Control");
    window.setFramerateLimit(60);
 
-   Player player;
+   Player player = Player();
+
    Clock clock;
 
    while (window.isOpen()) {

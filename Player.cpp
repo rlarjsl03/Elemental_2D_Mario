@@ -3,7 +3,7 @@
 
 using namespace sf;
 
-Player::Player()
+Player::Player()    //player.h에 있는 player 클래스의 생성자
     : velocity(0.f, 0.f), speed(200.f), gravity(500.f),
     groundY(500.f), jumpPower(-300.f), isOnGround(false) {
     if (!texture.loadFromFile("mario-2d.png")) {

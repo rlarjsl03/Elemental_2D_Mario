@@ -1,26 +1,35 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
 #include "Player.h"
+//#inlcude "Enemy.h"
 
-int main()
-{
-    sf::RenderWindow window(sf::VideoMode(1920, 1080), "2D_Mario");
-	sf::Style::Fullscreen;
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Red);
+using namespace sf;
 
-    while (window.isOpen())
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
+int main() {
+   RenderWindow window(VideoMode(800, 600), "Player Control");
+   window.setFramerateLimit(60);
 
-        window.clear();
-        window.draw(shape);
-        window.display();
-    }
+   Player player;
 
-    return 0;
+   Clock clock;
+
+   while (window.isOpen()) {
+       Time dt = clock.restart();
+       float deltaTime = dt.asSeconds();
+
+       Event event;
+       while (window.pollEvent(event)) {
+           if (event.type == Event::Closed)
+               window.close();
+       }
+
+       player.handleInput(deltaTime);  // 키 입력 처리
+       player.update(deltaTime); // 중력 적용
+
+       window.clear(Color::White);
+       player.draw(window);            // 플레이어 그리기
+       window.display();
+   }
+
+   return 0;
 }

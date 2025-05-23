@@ -19,6 +19,7 @@ private:
     int currentFrameIndex = 0;                // 현재 프레임 인덱스
     float animationTimer = 0.f;               // 타이머 누적값
     float frameDuration = 0.15f;              // 프레임 간 시간 간격
+    bool facingRight = true;
 
     // 플레이어 관련 변수
     Texture texture;

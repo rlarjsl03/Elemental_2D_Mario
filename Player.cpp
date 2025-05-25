@@ -81,8 +81,6 @@ void Player::update(float deltaTime) {
     velocity.y += gravity * deltaTime;
     sprite.move(0.f, velocity.y * deltaTime);
 
-       
-
     // 바닥 충돌 처리
     float bottom = sprite.getPosition().y + sprite.getGlobalBounds().height;
     if (bottom >= groundY) {

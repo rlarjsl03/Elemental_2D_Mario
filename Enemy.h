@@ -1,7 +1,21 @@
-//#pragma once
-//#include <SFML/Graphics.hpp>
-//#include <SFML/Window.hpp>
-//
-//class
-//
-//	// ±À¹Ù, º¸½º (ÄíÆÄ), ²É
+#pragma once
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+
+class Enemy
+{
+public:
+	Enemy();
+	~Enemy();
+
+private:
+
+};
+
+Enemy::Enemy()
+{
+}
+
+Enemy::~Enemy()
+{
+}

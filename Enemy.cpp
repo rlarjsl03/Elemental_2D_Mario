@@ -73,7 +73,7 @@ using namespace sf;
 
 
 Enemy::Enemy(const std::string& textureFile, Vector2f startPos)
-        : position(startPos), hp(100), facingRight(true)
+    : position(startPos), hp(100), facingRight(true), sprite()
     {
         if (!texture.loadFromFile("cupa.png")) {
             throw std::runtime_error("이미지를 불러올 수 없습니다: cupa.png");
@@ -114,6 +114,6 @@ bool Enemy::isDead() const {
     return hp <= 0;
 }
 
-const Sprite& getSprite() const {
-    return sprite;
+const Sprite& Enemy::getSprite() const {  
+   return sprite;
 }

@@ -36,4 +36,5 @@ public:
     void update(float deltaTime);
     void draw(RenderWindow& window);
     void updateAnimation(float deltaTime);
+    const Sprite& getSprite() const;
 };

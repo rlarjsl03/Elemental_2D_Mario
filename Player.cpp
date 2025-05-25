@@ -97,3 +97,7 @@ void Player::update(float deltaTime) {
 void Player::draw(RenderWindow& window) {
     window.draw(sprite);
 }
+
+const Sprite& Player::getSprite() const {
+    return sprite;
+}

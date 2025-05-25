@@ -5,9 +5,9 @@ using namespace sf;
 
 Player::Player()    //player.h에 있는 player 클래스의 생성자
     : velocity(0.f, 0.f), speed(200.f), gravity(500.f),
-    groundY(500.f), jumpPower(-300.f), isOnGround(false),
+    groundY(650.f), jumpPower(-500.f), isOnGround(false),
     currentFrame(100), frameTime(0.1f), frameTimer(0.f), frameCount(6),
-    frameWidth(100), frameHeight(103), facingRight(true) {
+    frameWidth(100), frameHeight(100), facingRight(true) {
 	if (!texture.loadFromFile("Mario_SpraySheet_padded_top.png")) { //Mario_SpraySheet.png
         throw std::runtime_error("이미지를 불러올 수 없습니다: mario-2d.png");
     }

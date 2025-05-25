@@ -26,7 +26,7 @@ int main() {
 
        player.handleInput(deltaTime);  // 키 입력 처리
        player.update(deltaTime); // 중력 적용
-       enemy.update(deltaTime, 500.f);  // groundY = 500
+       enemy.update(deltaTime, 800.f);  // groundY = 500
 
        // 충돌 체크
        FloatRect playerBounds = player.getSprite().getGlobalBounds();

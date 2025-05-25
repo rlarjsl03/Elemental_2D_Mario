@@ -91,8 +91,8 @@ public:
     Enemy(const std::string& textureFile, Vector2f startPos)
         : position(startPos), hp(100), facingRight(true)
     {
-        if (!texture.loadFromFile(textureFile)) {
-            throw std::runtime_error("이미지를 불러올 수 없습니다: " + textureFile);
+        if (!texture.loadFromFile("cupa.png")) {
+            throw std::runtime_error("이미지를 불러올 수 없습니다: cupa.png");
         }
         sprite.setTexture(texture);
         sprite.setScale(0.1f, 0.1f);

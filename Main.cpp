@@ -39,12 +39,11 @@ int main() {
            if (playerBottom < enemyTop + 10.f) {
                // 플레이어가 적 밟음
                enemy.takeDamage(enemy.getHp());
-               player.bounceJump();
            }
-           else {
-               // 플레이어가 옆이나 아래서 닿음 (데미지 처리 등)
-               player.takeDamage(10);
-           }
+           //else {
+           //    // 플레이어가 옆이나 아래서 닿음 (데미지 처리 등)
+           //    player.takeDamage(10);
+           //}
        }
 
        window.clear(Color::White);

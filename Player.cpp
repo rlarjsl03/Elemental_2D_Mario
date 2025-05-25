@@ -7,8 +7,8 @@ Player::Player()    //player.h에 있는 player 클래스의 생성자
     : velocity(0.f, 0.f), speed(200.f), gravity(500.f),
     groundY(500.f), jumpPower(-300.f), isOnGround(false),
     currentFrame(100), frameTime(0.1f), frameTimer(0.f), frameCount(6),
-    frameWidth(100), frameHeight(95), facingRight(true) {
-    if (!texture.loadFromFile("Mario_SpraySheet.png")) {
+    frameWidth(100), frameHeight(103), facingRight(true) {
+	if (!texture.loadFromFile("Mario_SpraySheet_padded_top.png")) { //Mario_SpraySheet.png
         throw std::runtime_error("이미지를 불러올 수 없습니다: mario-2d.png");
     }
     sprite.setTexture(texture);
@@ -50,6 +50,12 @@ void Player::handleInput(float deltaTime) {
     }
 }
 
+void Player::setFrame(int frameX, int frameY) {
+    int srcX = frameX * frameWidth;
+    int srcY = frameY * frameHeight + yOffset;
+    sprite.setTextureRect(IntRect(srcX, srcY, frameWidth, visibleHeight));
+}
+
 void Player::updateAnimation(float deltaTime) {
     animationTimer += deltaTime;
 
@@ -57,20 +63,20 @@ void Player::updateAnimation(float deltaTime) {
     bool isMoving = std::abs(velocity.x) > 1.0f || Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::Right);
 
     if (!isMoving) {
-        // 멈춰 있을 때 → (1,5)
-        sprite.setTextureRect(IntRect(4 * frameWidth, 0 * frameHeight, frameWidth, frameHeight));
+        // 멈춰 있을 때 → (4,0)
+		setFrame(4, 0);
     }
     else {
-        // 움직일 때 → (1,0) ↔ (1,5)
+        // 움직일 때 → (4,0) ↔ (1,0)
         if (animationTimer >= frameDuration) {
             animationTimer = 0.05f;
 
             if (currentFrameIndex == 0) {
-                sprite.setTextureRect(IntRect(4 * frameWidth, 0 * frameHeight, frameWidth, frameHeight));
+                setFrame(4, 0);
                 currentFrameIndex = 1;
             }
             else {
-                sprite.setTextureRect(IntRect(1 * frameWidth, 0 * frameHeight, frameWidth, frameHeight));
+                setFrame(1, 0);
                 currentFrameIndex = 0;
             }
         }
@@ -82,9 +88,9 @@ void Player::update(float deltaTime) {
     sprite.move(0.f, velocity.y * deltaTime);
 
     // 바닥 충돌 처리
-    float bottom = sprite.getPosition().y + sprite.getGlobalBounds().height;
+    float bottom = sprite.getPosition().y + sprite.getScale().y;
     if (bottom >= groundY) {
-        sprite.setPosition(sprite.getPosition().x, groundY - sprite.getGlobalBounds().height);
+        sprite.setPosition(sprite.getPosition().x, groundY - sprite.getScale().y);
         velocity.y = 0;
         isOnGround = true;
     }
@@ -93,6 +99,7 @@ void Player::update(float deltaTime) {
 
     updateAnimation(deltaTime);
 }
+
 void Player::takeDamage(int amount) {
     // 플레이어 데미지 처리 (필요시 구현)
 }

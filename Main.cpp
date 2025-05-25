@@ -6,7 +6,7 @@
 using namespace sf;
 
 int main() {
-   RenderWindow window(VideoMode(800, 600), "Player Control");
+   RenderWindow window(VideoMode(1920, 1080), "Player Control");
    window.setFramerateLimit(60);
 
    Player player;

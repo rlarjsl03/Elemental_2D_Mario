@@ -86,11 +86,11 @@ using namespace sf;
 Enemy::Enemy(const std::string& textureFile, Vector2f startPos)
     : position(startPos), hp(100), facingRight(true), sprite()
     {
-        if (!texture.loadFromFile("cupa.png")) {
+        if (!texture.loadFromFile("cupa2.png")) {
             throw std::runtime_error("이미지를 불러올 수 없습니다: cupa.png");
         }
         sprite.setTexture(texture);
-        sprite.setScale(0.1f, 0.1f);
+        sprite.setScale(1.5f, 1.5f);
         sprite.setPosition(position);
     }
 

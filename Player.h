@@ -19,6 +19,8 @@ private:
     float animationTimer = 0.f;               // 타이머 누적값
     float frameDuration = 0.15f;              // 프레임 간 시간 간격
     bool facingRight = true;
+    int visibleHeight = 98;  // 실제 이미지 높이
+    int yOffset = 30;        // 아래 공백 제거용 오프셋
 
     // 플레이어 관련 변수
     Texture texture;
@@ -36,6 +38,7 @@ public:
     void update(float deltaTime);
     void draw(RenderWindow& window);
     void updateAnimation(float deltaTime);
+    void setFrame(int frameX, int frameY);
     void takeDamage(int amount);
     void bounceJump();
     const Sprite& getSprite() const;

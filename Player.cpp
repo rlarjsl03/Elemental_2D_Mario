@@ -1,72 +1,54 @@
-#include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
-#include <iostream>
+#include "Player.h"
 
 using namespace sf;
 
-class Player
-{
-private:
-	CircleShape shape;
+Player::Player()    //player.h에 있는 player 클래스의 생성자
+    : velocity(0.f, 0.f), speed(200.f), gravity(500.f),
+    groundY(500.f), jumpPower(-300.f), isOnGround(false) {
+    if (!texture.loadFromFile("mario-2d.png")) {
+        throw std::runtime_error("이미지를 불러올 수 없습니다: mario-2d.png");
+    }
+    sprite.setTexture(texture);
+    sprite.setScale(0.1f, 0.1f);
+    sprite.setPosition(200.0f, 100.0f);
+}
+    // 키 입력 처리
+void Player::handleInput(float deltaTime) {
+    Vector2f direction(0.f, 0.f);
+    if (Keyboard::isKeyPressed(Keyboard::Left))
+        direction.x -= 1.f;
+    else if (Keyboard::isKeyPressed(Keyboard::Right))
+        direction.x += 1.f;
 
-public:
-	Player(CircleShape shape)
-	{
-		this->shape = shape;
-	}
-	void move(Keyboard a)
-	{
-		if (Keyboard::isKeyPressed(Keyboard::Left) == true)
-		{
-			shape.move(30.0f, 0.0f);
-		}
-		else if (Keyboard::isKeyPressed(Keyboard::Right) == true) {
-		}
-		else if (Keyboard::isKeyPressed(Keyboard::Up) == true) {
-			shape.move(0.0f, -30.0f);
-		}
-		else if (Keyboard::isKeyPressed(Keyboard::Down) == true) {
-			shape.move(0.0f, 30.0f);
-		}
-	}
+    sprite.move(direction * speed * deltaTime);
 
-};
+    if (Keyboard::isKeyPressed(Keyboard::Space) && isOnGround) {
+        velocity.y = jumpPower;
+        isOnGround = false;
+    }
+    else if (Keyboard::isKeyPressed(Keyboard::Escape)) {
+        // 게임 종료
+        exit(0);
+    }
+}
 
-int main()
-{
-	// Create a window
-    RenderWindow window(VideoMode(1920, 1080), "WIndow");
-    Style::Fullscreen;
-	CircleShape shape(50.0f);
-	shape.setFillColor(Color::Green);
-	shape.setPosition(320.0f - 50, 800.0f - 50);
-	Player player(shape);
-	while (window.isOpen())
-	{
+    // 중력 적용
+    void Player::update(float deltaTime) {
+        velocity.y += gravity * deltaTime;
+        sprite.move(0.f, velocity.y * deltaTime);
 
-		window.draw(shape);
-		window.display();
-		window.clear(Color::Black);
+        // 바닥 충돌 처리
+        float bottom = sprite.getPosition().y + sprite.getGlobalBounds().height;
+        if (bottom >= groundY) {
+            sprite.setPosition(sprite.getPosition().x, groundY - sprite.getGlobalBounds().height);
+            velocity.y = 0;
+            isOnGround = true;
+        }
+        else
+            isOnGround = false;
+    }
 
-		Event event;
-		while (window.pollEvent(event)) {
-
-			switch (event.type) {
-			case Event::Closed:
-				window.close();
-				break;
-			case Event::KeyPressed:
-				if (Keyboard::isKeyPressed(Keyboard::Escape) == true) {
-					window.close();
-				}
-				Keyboard a;
-				Keyboard::isKeyPressed(a) == true;
-				player.move(a);
-				break;
-			default:
-				break;
-			}
-		}
-	}
-    return 0;
+void Player::draw(RenderWindow& window) {
+    window.draw(sprite);
 }

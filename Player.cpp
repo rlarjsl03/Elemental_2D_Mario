@@ -15,7 +15,7 @@ Player::Player()    //player.h에 있는 player 클래스의 생성자
     sprite.setTextureRect(IntRect(0, 0, frameWidth, frameHeight));
     sprite.setScale(-1.5f, 1.5f);   // 오른쪽을 바라보도록 설정
 	sprite.setOrigin(frameWidth / 2.f, 0.f);    // 스프라이트의 중심을 왼쪽 아래로 설정(좌우 반전 시 대칭 맞추기)
-    sprite.setPosition(200.0f, 100.0f);
+    sprite.setPosition(200.0f, 400.0f);
 }
 
 

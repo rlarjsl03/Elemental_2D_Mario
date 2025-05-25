@@ -93,7 +93,14 @@ void Player::update(float deltaTime) {
 
     updateAnimation(deltaTime);
 }
+void Player::takeDamage(int amount) {
+    // 플레이어 데미지 처리 (필요시 구현)
+}
 
+void Player::bounceJump() {
+    velocity.y = jumpPower;
+    isOnGround = false;
+}
 void Player::draw(RenderWindow& window) {
     window.draw(sprite);
 }

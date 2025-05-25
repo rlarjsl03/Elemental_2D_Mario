@@ -36,5 +36,7 @@ public:
     void update(float deltaTime);
     void draw(RenderWindow& window);
     void updateAnimation(float deltaTime);
+    void takeDamage(int amount);
+    void bounceJump();
     const Sprite& getSprite() const;
 };

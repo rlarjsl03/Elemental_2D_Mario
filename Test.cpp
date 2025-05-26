@@ -8,6 +8,7 @@ int main() {
 	sf::RenderWindow __window;
 	__window.create(sf::VideoMode(800, 600), "SFML window");
 }
+//yeonbin
 //sf::Texture texture;
 //if (!texture.loadFromFile("player.png")) {
 //	return -1; // Error loading texture

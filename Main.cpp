@@ -30,6 +30,5 @@ int main() {
        player.draw(window);            // 플레이어 그리기
        window.display();
    }
-
    return 0;
 }

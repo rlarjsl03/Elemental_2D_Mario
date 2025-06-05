@@ -3,12 +3,14 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "BackGround.h"
+#include "Item.h"
 
 using namespace sf;
 
 int main() {
    RenderWindow window(VideoMode(1920, 1080), "Player Control");
    window.setFramerateLimit(60);
+   Item coin("coin.png", Vector2f(500.f, 600.f));   // 아이템 객체 생성 06/05 추가
 
    Background gameBackground("Background.jpg"); //백그라운드 객체 생성
    Player player;

@@ -34,6 +34,7 @@ private:
 
 public:
     Player();
+    Vector2f getVelocity() const;
     void handleInput(float deltaTime);
     void update(float deltaTime);
     void draw(RenderWindow& window);

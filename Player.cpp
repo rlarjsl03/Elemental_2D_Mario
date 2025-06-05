@@ -18,7 +18,9 @@ Player::Player()    //player.h에 있는 player 클래스의 생성자
     sprite.setPosition(200.0f, 400.0f);
 }
 
-
+Vector2f Player::getVelocity() const {
+    return velocity;
+}
     // 키 입력 처리
 void Player::handleInput(float deltaTime) {
     Vector2f direction(0.f, 0.f);

@@ -10,7 +10,7 @@ int main() {
    RenderWindow window(VideoMode(1920, 1080), "Player Control");
    window.setFramerateLimit(60);
 
-   Background gameBackground("Background.jpg"); //백그라운드 객체 생성
+   Background gameBackground("Background.png"); //백그라운드 객체 생성
    Player player;
    Enemy enemy("enemy.png", Vector2f(300.f, 0.f));  // y는 update에서 바닥 고정됨
 

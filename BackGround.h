@@ -1,31 +1,29 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include <string> // std::string을 사용하기 위해 포함
 
-using namespace sf;
 class Background {
 public:
-    // 생성자: 배경 이미지 파일 경로, 초기 위치 (선택 사항)를 받습니다.
-    Background(const std::string& texturePath, float initialX = 0.0f, float initialY = 0.0f);
+    // 생성자: 텍스처 경로와 초기 위치 (기본 0,0)
+    Background(const std::string& texturePath, float initialX = 0.f, float initialY = 0.f);
 
-    // 배경의 현재 위치를 업데이트하는 함수 (주로 스크롤링에 사용)
+    // 매 프레임 호출: 배경 위치 업데이트 (deltaTime, 스크롤 속도)
     void update(float deltaTime, float scrollSpeed);
 
-    // 배경을 렌더링 윈도우에 그리는 함수
-    void draw(RenderWindow& window);
+    // 매 프레임 호출: 배경 그리기
+    void draw(sf::RenderWindow& window);
 
-    // (선택 사항) 배경의 위치를 직접 설정하는 함수
+    // 배경 위치 설정 (옵션)
     void setPosition(float x, float y);
 
-    // (선택 사항) 배경의 스케일을 설정하는 함수
+    // 배경 스케일 설정 (옵션)
     void setScale(float scaleX, float scaleY);
 
 private:
-    Texture m_texture;  // 배경 이미지 텍스처
-    Sprite m_sprite1;   // 첫 번째 배경 스프라이트 (스크롤링을 위해 2개 사용)
-    Sprite m_sprite2;   // 두 번째 배경 스프라이트
+    sf::Texture m_texture;        // 배경 텍스처
+    sf::Sprite m_sprite1;         // 첫 번째 스프라이트
+    sf::Sprite m_sprite2;         // 두 번째 스프라이트
+    sf::Sprite m_sprite3;         // 세 번째 스프라이트
 
-    float m_scrollSpeed; // 배경의 스크롤 속도
-    float m_currentScrollOffset; // 현재 스크롤 오프셋 (X축)
-    float m_textureWidth; // 배경 이미지의 실제 너비
+    float m_scrollSpeed;          // 현재 스크롤 속도 (px/s)
+    float m_textureWidth;         // 텍스처의 가로 길이 (스케일 적용 후)
 };

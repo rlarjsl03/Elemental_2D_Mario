@@ -42,12 +42,13 @@ int main() {
            float playerBottom = playerBounds.top + playerBounds.height;
            float enemyTop = enemyBounds.top;
 
-           if (playerBottom < enemyTop + 10.f) {
-               // 플레이어가 적 밟음
+           // 1. 떨어지고 있는 중인지 확인 (velocity.y > 0)
+           // 2. 플레이어가 적 위에서 떨어진 경우
+           if (player.getVelocity().y > 0.f && playerBottom < enemyTop + 10.f) {
                enemy.takeDamage(enemy.getHp());
+               player.bounceJump(); // 튕겨 오름 06/05 추가
            }
            else {
-               // 플레이어가 옆이나 아래서 닿음 (데미지 처리 등)
                player.takeDamage(10);
            }
        }

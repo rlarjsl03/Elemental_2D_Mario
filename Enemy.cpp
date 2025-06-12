@@ -1,3 +1,4 @@
+// enemy.cpp
 #include <SFML/Graphics.hpp>
 #include <stdexcept>
 #include "Enemy.h"
@@ -5,27 +6,28 @@
 using namespace sf;
 
 Enemy::Enemy(const std::string& textureFile, Vector2f startPos)
-    : position(startPos), hp(100), facingRight(true), sprite()
-    {
-        if (!texture.loadFromFile("cupa2.png")) {
-            throw std::runtime_error("이미지를 불러올 수 없습니다: cupa.png");
-        }
-        sprite.setTexture(texture);
-        sprite.setScale(1.5f, 1.5f);
-        sprite.setPosition(position);
+    : position(startPos), hp(100), facingRight(true), sprite() {
+    if (!texture.loadFromFile("cupa2.png")) { // 이미지 파일명 확인
+        throw std::runtime_error("이미지를 불러올 수 없습니다: cupa2.png");
     }
+    sprite.setTexture(texture);
+    sprite.setScale(1.5f, 1.5f); // 초기 스케일 설정
+    sprite.setPosition(position);
+}
 
 void Enemy::update(float deltaTime, float groundY) {
     float speed = 50.f;
     if (facingRight) {
         position.x += speed * deltaTime;
-        if (position.x > 500) facingRight = false;
+        // 적이 화면 오른쪽 특정 지점(예: 500)을 넘어가면 방향 전환
+        if (position.x > 800) facingRight = false; // 더 넓은 범위로 설정
     }
     else {
         position.x -= speed * deltaTime;
+        // 적이 화면 왼쪽 특정 지점(예: 100)보다 작아지면 방향 전환
         if (position.x < 100) facingRight = true;
     }
-    position.y = groundY - sprite.getGlobalBounds().height;  // 바닥에 고정
+    position.y = groundY - sprite.getGlobalBounds().height; // 바닥에 고정
     sprite.setPosition(position);
 }
 
@@ -46,6 +48,11 @@ bool Enemy::isDead() const {
     return hp <= 0;
 }
 
-const Sprite& Enemy::getSprite() const {  
-   return sprite;
+const Sprite& Enemy::getSprite() const {
+    return sprite;
+}
+
+// 새로 추가된 setScale 함수 구현
+void Enemy::setScale(float scaleX, float scaleY) {
+    sprite.setScale(scaleX, scaleY);
 }

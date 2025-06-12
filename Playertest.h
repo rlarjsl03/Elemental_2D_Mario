@@ -45,7 +45,7 @@ public:
     const Sprite& getSprite() const;
 
     // --- 새로 추가된 함수들 ---
-    void setPosition(float x, float y); // 플레이어 위치를 직접 설정
-    void setVelocityY(float y); // 플레이어 수직 속도를 직접 설정
-    void setOnGround(bool onGround); // 플레이어가 땅에 닿았는지 여부 설정
+    void setPosition(float x, float y);     // 플레이어 위치를 직접 설정
+    void setVelocityY(float y);             // 플레이어 수직 속도를 직접 설정
+    void setOnGround(bool onGround);        // 플레이어가 땅에 닿았는지 여부 설정
 };

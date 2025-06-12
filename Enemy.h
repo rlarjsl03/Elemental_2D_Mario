@@ -5,8 +5,7 @@
 
 using namespace sf;
 
-class Enemy
-{
+class Enemy {
 private:
     Texture texture;
     Sprite sprite;
@@ -22,4 +21,7 @@ public:
     int getHp() const;
     bool isDead() const;
     const Sprite& getSprite() const;
+
+    // 새로 추가된 setScale 함수 선언
+    void setScale(float scaleX, float scaleY);
 };

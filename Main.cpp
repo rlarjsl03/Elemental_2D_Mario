@@ -10,7 +10,7 @@ using namespace sf;
 int main() {
    RenderWindow window(VideoMode(1920, 1080), "Player Control");
    window.setFramerateLimit(60);
-   Item coin("coin.png", Vector2f(500.f, 600.f));   // 아이템 객체 생성 06/05 추가
+   //Item coin("coin.png", Vector2f(500.f, 600.f));   // 아이템 객체 생성 06/05 추가
 
    Background gameBackground("Background.jpg"); //백그라운드 객체 생성
    Player player;
@@ -18,12 +18,16 @@ int main() {
 
    Clock clock;
 
+   // 아이템 객체 생성
+   std::vector<std::unique_ptr<Item>> items;
+   items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(900.0f, 700.0f))); // 코인
+   items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(800.0f, 720.0f))); // 버섯
+
    while (window.isOpen()) {
        Time dt = clock.restart();
        float deltaTime = dt.asSeconds();
-
        Event event;
-       while (window.pollEvent(event)) {
+	   while (window.pollEvent(event)) {
            if (event.type == Event::Closed)
                window.close();
        }
@@ -35,7 +39,7 @@ int main() {
        player.update(deltaTime); // 중력 적용
        enemy.update(deltaTime, 800.f);  // groundY = 500
        gameBackground.draw(window); // 배경 그리기
-
+       
        // 충돌 체크
        FloatRect playerBounds = player.getSprite().getGlobalBounds();
        FloatRect enemyBounds = enemy.getSprite().getGlobalBounds();
@@ -54,12 +58,23 @@ int main() {
                player.takeDamage(10);
            }
        }
-
        window.clear(Color::White);
        gameBackground.draw(window); // 배경 그리기
+
        player.draw(window);            // 플레이어 그리기
+
+       // 적 그리기 및 업데이트
        if (!enemy.isDead())
            enemy.draw(window);
+
+       // 아이템 업데이트(그리기)  및 충돌 처리
+       for (auto& item : items) {
+           item->update(deltaTime);
+           if (!item->isCollected() && item->checkCollision(player.getSprite())) {
+               item->applyEffect(player);
+           }
+           item->draw(window);
+       }
        window.display();
    }
 

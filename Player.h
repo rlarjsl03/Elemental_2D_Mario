@@ -43,4 +43,6 @@ public:
     void takeDamage(int amount);
     void bounceJump();
     const Sprite& getSprite() const;
+    void setScale(float scale);
+    void addScore(int amount);
 };

@@ -5,7 +5,7 @@ using namespace sf;
 
 Player::Player()    //player.h에 있는 player 클래스의 생성자
     : velocity(0.f, 0.f), speed(200.f), gravity(500.f),
-    groundY(650.f), jumpPower(-400.f), isOnGround(false),
+    groundY(645.f), jumpPower(-400.f), isOnGround(false),
     currentFrame(100), frameTime(0.1f), frameTimer(0.f), frameCount(6),
     frameWidth(100), frameHeight(100), facingRight(true) {
 	if (!texture.loadFromFile("Mario_SpraySheet_padded_top.png")) { //Mario_SpraySheet.png
@@ -116,4 +116,12 @@ void Player::draw(RenderWindow& window) {
 
 const Sprite& Player::getSprite() const {
     return sprite;
+}
+// 플레이어의 스프라이트를 반환하는 함수
+void Player::setScale(float scale) {
+    sprite.setScale((facingRight ? -1 : 1) * scale, scale);
+}
+
+void Player::addScore(int amount) {
+    // 점수 변수 만들고 += amount 처리
 }

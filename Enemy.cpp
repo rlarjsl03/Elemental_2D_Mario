@@ -1,6 +1,5 @@
-#include <SFML/Graphics.hpp>
-#include <stdexcept>
 #include "Enemy.h"
+#include <stdexcept>
 
 using namespace sf;
 
@@ -16,6 +15,8 @@ Enemy::Enemy(const std::string& textureFile, Vector2f startPos)
     }
 
 void Enemy::update(float deltaTime, float groundY) {
+    if (isDead()) return;
+
     float speed = 50.f;
     if (facingRight) {
         position.x += speed * deltaTime;
@@ -25,17 +26,24 @@ void Enemy::update(float deltaTime, float groundY) {
         position.x -= speed * deltaTime;
         if (position.x < 100) facingRight = true;
     }
-    position.y = groundY - sprite.getGlobalBounds().height;  // 바닥에 고정
+
+    position.y = groundY - sprite.getGlobalBounds().height;
     sprite.setPosition(position);
 }
 
 void Enemy::draw(RenderWindow& window) {
+    if (isDead()) return;
     window.draw(sprite);
 }
 
 void Enemy::takeDamage(int amount) {
     hp -= amount;
-    if (hp < 0) hp = 0;
+    if (hp <= 0) {
+        hp = 0;
+        // 히트박스 제거 및 위치 이동
+        sprite.setScale(0.f, 0.f);
+        sprite.setPosition(-9999.f, -9999.f);
+    }
 }
 
 int Enemy::getHp() const {
@@ -46,6 +54,10 @@ bool Enemy::isDead() const {
     return hp <= 0;
 }
 
-const Sprite& Enemy::getSprite() const {  
-   return sprite;
+bool Enemy::isActive() const {
+    return !isDead();
+}
+
+const Sprite& Enemy::getSprite() const {
+    return sprite;
 }

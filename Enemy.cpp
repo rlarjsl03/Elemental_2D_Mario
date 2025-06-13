@@ -1,26 +1,33 @@
 #include "Enemy.h"
-#include <random>
+#include <cstdlib>
 
-Enemy::Enemy(std::shared_ptr<sf::Texture> texturePtr, sf::Vector2f startPos)
-    : texture(texturePtr), position(startPos), hp(100)
-{
-    sprite.setTexture(*texture);
+Enemy::Enemy(const sf::Texture& tex, sf::Vector2f startPos)
+    : texture(tex), position(startPos), hp(100), facingRight(rand() % 2 == 0) {
+    sprite.setTexture(texture);
     sprite.setScale(1.5f, 1.5f);
     sprite.setPosition(position);
-
-    // 랜덤 엔진과 분포(속도, 방향)
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> speedDist(30.f, 100.f);
-    std::bernoulli_distribution dirDist(0.5);
-
-    speed = speedDist(gen);
-    facingRight = dirDist(gen);
 }
 
 void Enemy::update(float deltaTime, float groundY) {
-    if (isDead()) return;
+    float speed = 50.f;
 
+    if (isDead()) {
+        // 죽은 적은 일단 화면 밖으로 치움
+        sprite.setPosition(-9999.f, -9999.f);
+
+        // 죽은 후 일정 거리 지나면 리스폰
+        position.x += (facingRight ? speed : -speed) * deltaTime;
+
+        if (position.x < -100.f || position.x > 2000.f) {
+            hp = 100;
+            position.x = 1920.f + static_cast<float>(rand() % 500);
+            facingRight = rand() % 2 == 0;
+        }
+
+        return;
+    }
+
+    // 살아있는 적의 움직임
     if (facingRight) {
         position.x += speed * deltaTime;
         if (position.x > 500) facingRight = false;
@@ -35,15 +42,15 @@ void Enemy::update(float deltaTime, float groundY) {
 }
 
 void Enemy::draw(sf::RenderWindow& window) {
-    if (isDead()) return;
-    window.draw(sprite);
+    if (!isDead())
+        window.draw(sprite);
 }
 
 void Enemy::takeDamage(int amount) {
     hp -= amount;
-    if (hp <= 0) {
-        hp = 0;
-        sprite.setPosition(-9999.f, -9999.f);
+	if (hp < 0) {
+		hp = 0; // HP가 음수가 되지 않도록 보장
+        sprite.setPosition(-9999.f, -9999.f);  // 죽었을 때 센서 완전 제거
     }
 }
 

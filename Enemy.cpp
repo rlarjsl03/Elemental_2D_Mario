@@ -1,23 +1,26 @@
 #include "Enemy.h"
-#include <stdexcept>
+#include <random>
 
-using namespace sf;
-
-Enemy::Enemy(const std::string& textureFile, Vector2f startPos)
-    : position(startPos), hp(100), facingRight(true), sprite()
+Enemy::Enemy(std::shared_ptr<sf::Texture> texturePtr, sf::Vector2f startPos)
+    : texture(texturePtr), position(startPos), hp(100)
 {
-    if (!texture.loadFromFile("cupa2.png")) {
-        throw std::runtime_error("이미지를 불러올 수 없습니다: " + textureFile);
-    }
-    sprite.setTexture(texture);
+    sprite.setTexture(*texture);
     sprite.setScale(1.5f, 1.5f);
     sprite.setPosition(position);
+
+    // 랜덤 엔진과 분포(속도, 방향)
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> speedDist(30.f, 100.f);
+    std::bernoulli_distribution dirDist(0.5);
+
+    speed = speedDist(gen);
+    facingRight = dirDist(gen);
 }
 
 void Enemy::update(float deltaTime, float groundY) {
     if (isDead()) return;
 
-    float speed = 50.f;
     if (facingRight) {
         position.x += speed * deltaTime;
         if (position.x > 500) facingRight = false;
@@ -31,7 +34,7 @@ void Enemy::update(float deltaTime, float groundY) {
     sprite.setPosition(position);
 }
 
-void Enemy::draw(RenderWindow& window) {
+void Enemy::draw(sf::RenderWindow& window) {
     if (isDead()) return;
     window.draw(sprite);
 }
@@ -40,8 +43,6 @@ void Enemy::takeDamage(int amount) {
     hp -= amount;
     if (hp <= 0) {
         hp = 0;
-        // 히트박스 제거 및 위치 이동
-        sprite.setScale(0.f, 0.f);
         sprite.setPosition(-9999.f, -9999.f);
     }
 }
@@ -58,6 +59,6 @@ bool Enemy::isActive() const {
     return !isDead();
 }
 
-const Sprite& Enemy::getSprite() const {
+const sf::Sprite& Enemy::getSprite() const {
     return sprite;
 }

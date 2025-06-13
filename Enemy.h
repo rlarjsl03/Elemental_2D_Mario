@@ -1,9 +1,10 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <memory>
 
 class Enemy {
 public:
-    Enemy(const std::string& textureFile, sf::Vector2f startPos);
+    Enemy(std::shared_ptr<sf::Texture> texturePtr, sf::Vector2f startPos);
 
     void update(float deltaTime, float groundY);
     void draw(sf::RenderWindow& window);
@@ -11,15 +12,15 @@ public:
     void takeDamage(int amount);
     int getHp() const;
     bool isDead() const;
-
     bool isActive() const;
 
     const sf::Sprite& getSprite() const;
 
 private:
-    sf::Texture texture;
+    std::shared_ptr<sf::Texture> texture;
     sf::Sprite sprite;
     sf::Vector2f position;
     int hp;
     bool facingRight;
+    float speed;
 };

@@ -32,7 +32,7 @@ int main() {
 
     // 텍스처 미리 로드
     Texture cupa, Goomba, Turtle;
-    cupa.loadFromFile("cupa2.png");
+    cupa.loadFromFile("cupa.png");
     Goomba.loadFromFile("Goomba.png");
     Turtle.loadFromFile("Turtle.png");
 
@@ -46,7 +46,7 @@ int main() {
     // 아이템 객체 생성
     std::vector<std::unique_ptr<Item>> items;
     items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(900.0f, 700.0f))); // 코인
-    items.push_back(std::make_unique<MushroomItem>("Mushroom_.png", Vector2f(800.0f, 720.0f))); // 버섯
+    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(800.0f, 720.0f))); // 버섯
 
     // --- sf::View (카메라) 설정 ---
     View gameView(FloatRect(0, 0, 1920, 1080)); // 윈도우와 동일한 크기의 뷰 생성
@@ -112,7 +112,7 @@ int main() {
         sf::FloatRect playerBounds = player.getSprite().getGlobalBounds();
 
         for (auto& enemy : enemies) {
-            enemy->update(deltaTime, 800.f);    // groundY = 500
+            enemy->update(deltaTime, groundY);    // groundY = 920.f
 
             sf::FloatRect enemyBounds = enemy->getSprite().getGlobalBounds();
 

@@ -36,7 +36,8 @@ int main() {
     Goomba.loadFromFile("Goomba.png");
     Turtle.loadFromFile("Turtle.png");
 
-    std::vector<std::unique_ptr<Enemy>> enemies;
+	std::vector<std::unique_ptr<Enemy>> enemies;    // 적 객체 생성
+	// 적 객체 생성 및 초기 위치 설정
     enemies.push_back(std::make_unique<Enemy>(cupa, Vector2f(300.f, groundY)));
     enemies.push_back(std::make_unique<Enemy>(Goomba, Vector2f(700.f, groundY)));
     enemies.push_back(std::make_unique<Enemy>(Turtle, Vector2f(1100.f, groundY)));
@@ -53,7 +54,7 @@ int main() {
 
     // 맵의 경계 설정: 플레이어가 "계속 갈 수 있게" 하려면 MAP_WIDTH를 매우 크게 설정
     // 이렇게 하면 뷰가 맵 끝에 도달하여 멈추는 일은 거의 없을 것입니다.
-    const float MAP_WIDTH = 100000.f; // 매우 큰 값으로 설정
+    const float MAP_WIDTH = 10000.f; // 매우 큰 값으로 설정
     const float VIEW_WIDTH = gameView.getSize().x;
     const float VIEW_HEIGHT = gameView.getSize().y;
 

@@ -6,7 +6,7 @@
 using namespace sf;
 
 Player::Player()
-    : velocity(0.f, 0.f), speed(200.f), gravity(700.f),
+    : velocity(0.f, 0.f), speed(2000.f), gravity(700.f),
     groundY(920.f), jumpPower(-400.f), isOnGround(false),
     currentFrame(100), frameTime(0.1f), frameTimer(0.f), frameCount(6),
     frameWidth(100), frameHeight(100), facingRight(true) {

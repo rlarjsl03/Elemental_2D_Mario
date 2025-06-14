@@ -36,6 +36,7 @@ int main() {
     Goomba.loadFromFile("Goomba.png");
     Turtle.loadFromFile("Turtle.png");
 
+	// 利 按眉 积己
     std::vector<std::unique_ptr<Enemy>> enemies;
     enemies.push_back(std::make_unique<Enemy>(cupa, Vector2f(300.f, groundY)));
     enemies.push_back(std::make_unique<Enemy>(Goomba, Vector2f(700.f, groundY)));

@@ -21,7 +21,7 @@ int main() {
 
     // 플레이어 초기 위치 설정
     Player player;
-    player.setPosition(200.0f, groundY - player.getSprite().getGlobalBounds().height);
+    player.setPosition(200.0f, groundY);
 
     // Background 객체 생성 (플레이어 초기 위치를 배경의 초기 X 위치로 사용)
     // 이렇게 하면 게임 시작 시 배경이 플레이어 위치에 맞춰져 보입니다.
@@ -45,8 +45,8 @@ int main() {
 
     // 아이템 객체 생성
     std::vector<std::unique_ptr<Item>> items;
-    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(900.0f, 700.0f))); // 코인
-    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(800.0f, 720.0f))); // 버섯
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(900.0f, groundY))); // 코인
+    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(800.0f, groundY))); // 버섯
 
     // --- sf::View (카메라) 설정 ---
     View gameView(FloatRect(0, 0, 1920, 1080)); // 윈도우와 동일한 크기의 뷰 생성

@@ -1,6 +1,6 @@
 #include "Item.h"
 
-Item::Item(const std::string& texturePath, sf::Vector2f position) {
+Item::Item(const std::string& texturePath, sf::Vector2f startPos) : position(startPos) {
     if (!texture.loadFromFile(texturePath))
         throw std::runtime_error("아이템 텍스처 로드 실패");
     sprite.setTexture(texture);

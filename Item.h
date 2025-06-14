@@ -4,8 +4,9 @@
 
 class Item {    // 아이템 클래스
 protected:
-    sf::Texture texture;
-    sf::Sprite sprite;
+    Texture texture;
+    Vector2f position;
+    Sprite sprite;
     bool collected = false;
 
 public:
@@ -18,7 +19,7 @@ public:
     bool checkCollision(const sf::Sprite& playerSprite);
     bool isCollected() const;
 
-    const sf::Sprite& getSprite() const;
+    const Sprite& getSprite() const;
 };
 
 class MushroomItem : public Item {  // 버섯 아이템 클래스

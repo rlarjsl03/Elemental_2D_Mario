@@ -17,7 +17,7 @@ int main() {
     //Item coin("coin.png", Vector2f(500.f, 600.f));   // 아이템 객체 생성 06/05 추가
 
     // 게임 변수
-    float groundY = 800.f;
+    float groundY = 920.f;
 
     // 플레이어 초기 위치 설정
     Player player;
@@ -31,22 +31,22 @@ int main() {
 
 
     // 텍스처 미리 로드
-    Texture cupa, mushroom4, turtle3;
+    Texture cupa, Goomba, Turtle;
     cupa.loadFromFile("cupa2.png");
-    mushroom4.loadFromFile("mushroom4.png");
-    turtle3.loadFromFile("turtle3.png");
+    Goomba.loadFromFile("Goomba.png");
+    Turtle.loadFromFile("Turtle.png");
 
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.push_back(std::make_unique<Enemy>(cupa, Vector2f(300.f, 0.f)));
-    enemies.push_back(std::make_unique<Enemy>(mushroom4, Vector2f(700.f, 0.f)));
-    enemies.push_back(std::make_unique<Enemy>(turtle3, Vector2f(1100.f, 0.f)));
+    enemies.push_back(std::make_unique<Enemy>(cupa, Vector2f(300.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(Goomba, Vector2f(700.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(Turtle, Vector2f(1100.f, groundY)));
 
     Clock clock;
 
     // 아이템 객체 생성
     std::vector<std::unique_ptr<Item>> items;
     items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(900.0f, 700.0f))); // 코인
-    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(800.0f, 720.0f))); // 버섯
+    items.push_back(std::make_unique<MushroomItem>("Mushroom_.png", Vector2f(800.0f, 720.0f))); // 버섯
 
     // --- sf::View (카메라) 설정 ---
     View gameView(FloatRect(0, 0, 1920, 1080)); // 윈도우와 동일한 크기의 뷰 생성
@@ -78,8 +78,6 @@ int main() {
         // --- 입력 및 업데이트 ---
         player.handleInput(deltaTime);
         player.update(deltaTime);
-        enemy.update(deltaTime, groundY);
-
 
         // --- View (카메라) 업데이트 및 경계 제한 ---
         // 뷰의 목표 중심 X 좌표를 플레이어의 X 위치로 설정

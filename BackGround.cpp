@@ -1,5 +1,5 @@
 #include "Background.h"
-#include <iostream>
+#include <iostream> // 에러 로깅을 위해 포함
 
 using namespace sf;
 

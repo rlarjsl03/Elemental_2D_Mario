@@ -9,6 +9,17 @@
 #include "Background.h"
 #include "Item.h"
 
+bool isTooCloseToOtherEnemies(const sf::Vector2f& pos, const std::vector<std::unique_ptr<Enemy>>& enemies, float minDistance) {
+    for (const auto& other : enemies) {
+        if (!other->isDead()) {
+            float dist = std::abs(other->getSprite().getPosition().x - pos.x);
+            if (dist < minDistance)
+                return true;
+        }
+    }
+    return false;
+}
+
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));  // 랜덤 초기화
 
@@ -112,7 +123,7 @@ int main() {
         sf::FloatRect playerBounds = player.getSprite().getGlobalBounds();
 
         for (auto& enemy : enemies) {
-            enemy->update(deltaTime, groundY);    // groundY = 920.f
+            enemy->update(deltaTime, groundY, player.getSprite().getPosition());    // groundY = 920.f
 
             sf::FloatRect enemyBounds = enemy->getSprite().getGlobalBounds();
 
@@ -126,6 +137,16 @@ int main() {
                 }
                 else {
                     player.takeDamage(10);
+                }
+            }
+            // 리스폰 로직
+            if (enemy->isDead() && enemy->canRespawn()) {
+                float offsetX = 400.f + static_cast<float>(rand() % 400);  // 플레이어 앞쪽
+                float spawnX = player.getSprite().getPosition().x + offsetX;
+                sf::Vector2f proposedPos(spawnX, groundY);
+
+                if (!isTooCloseToOtherEnemies(proposedPos, enemies, 100.f)) {
+                    enemy->respawnAt(proposedPos);
                 }
             }
         }

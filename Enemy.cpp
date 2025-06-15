@@ -7,31 +7,24 @@ Enemy::Enemy(const sf::Texture& tex, sf::Vector2f startPos)
     sprite.setScale(1.5f, 1.5f);
     sprite.setPosition(position);
 }
-void Enemy::update(float deltaTime, float groundY) {
+
+void Enemy::update(float deltaTime, float groundY, const sf::Vector2f& playerPos) {
     float speed = 50.f;
 
     if (isDead()) {
-        // 죽은 적은 일단 화면 밖으로 치움
+        // 죽은 적은 화면 밖으로 이동 (충돌 비활성화)
         sprite.setPosition(-9999.f, -9999.f);
-
-        // 죽은 후 일정 거리 지나면 리스폰
-        position.x += (facingRight ? speed : -speed) * deltaTime;
-
-        if (position.x < -100.f || position.x > 2000.f) {
-            hp = 100;
-            position.x = 1920.f + static_cast<float>(rand() % 500);
-            facingRight = rand() % 2 == 0;
-        }
         return;
     }
-    // 살아있는 적의 움직임
+
+    // 이동
     if (facingRight) {
         position.x += speed * deltaTime;
-        if (position.x > 500) facingRight = false;
+        if (position.x > playerPos.x + 300) facingRight = false;
     }
     else {
         position.x -= speed * deltaTime;
-        if (position.x < 100) facingRight = true;
+        if (position.x < playerPos.x - 300) facingRight = true;
     }
 
     position.y = groundY - sprite.getGlobalBounds().height;
@@ -45,9 +38,10 @@ void Enemy::draw(sf::RenderWindow& window) {
 
 void Enemy::takeDamage(int amount) {
     hp -= amount;
-    if (hp < 0) {
-        hp = 0; // HP가 음수가 되지 않도록 보장
-        sprite.setPosition(-9999.f, -9999.f);  // 죽었을 때 센서 완전 제거
+    if (hp <= 0) {
+        hp = 0;
+        sprite.setPosition(-9999.f, -9999.f);  // 충돌 제거
+        respawnTimer.restart();
     }
 }
 
@@ -59,7 +53,6 @@ bool Enemy::isDead() const {
     return hp <= 0;
 }
 
-
 bool Enemy::isActive() const {
     return !isDead();
 }
@@ -68,4 +61,14 @@ const sf::Sprite& Enemy::getSprite() const {
     return sprite;
 }
 
+bool Enemy::canRespawn() const {
+    return respawnTimer.getElapsedTime().asSeconds() >= respawnDelay;
+}
 
+void Enemy::respawnAt(sf::Vector2f newPos) {
+    hp = 100;
+    position = newPos;
+    facingRight = rand() % 2 == 0;
+    sprite.setPosition(position);
+    respawnTimer.restart();
+}

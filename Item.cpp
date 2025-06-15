@@ -32,7 +32,8 @@ MushroomItem::MushroomItem(const std::string& texturePath, sf::Vector2f position
 }
 void MushroomItem::applyEffect(Player& player) {
     // 커지기 효과
-    player.setScale(2.0f); // Player에 setScale 함수 필요
+    player.setIsBig(true);
+    player.increaseLife(1);    // 생명 증가
 }
 
 // 코인 아이템 cpp

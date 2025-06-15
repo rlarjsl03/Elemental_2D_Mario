@@ -32,6 +32,12 @@ private:
     float groundY;
     float jumpPower;
     bool isOnGround;
+    bool isDead = false;
+    int life = 1; // 초기 생명 수 설정
+    bool isBig = false;
+    bool isInvincible = false;
+    float invincibilityTimer = 0.f;
+    const float invincibilityDuration = 2.f; // 무적 시간 2초
 
 public:
     Player();
@@ -48,4 +54,14 @@ public:
     // --- 새로 추가할 함수들 ---
     void setPosition(float x, float y); // 플레이어 위치 설정 함수 추가};
     Vector2f getVelocity() const;
+    void die();
+    bool isAlive() const;
+    void increaseLife(int amount); // 생명 증가 함수
+    void loseLife(int amount);
+    int getLife() const;               // 생명 수 확인 함수
+    void grow(); // 버섯 먹고 커질 때 호출할 함수
+    bool getIsBig() const;
+    void setIsBig(bool big);
+    void setInvincible(bool value);
+    bool getisInvincible() const;
 };

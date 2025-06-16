@@ -1,6 +1,6 @@
 #include "Item.h"
 
-Item::Item(const std::string& texturePath, sf::Vector2f position) {
+Item::Item(const std::string& texturePath, sf::Vector2f startPos) : position(startPos) {
     if (!texture.loadFromFile(texturePath))
         throw std::runtime_error("아이템 텍스처 로드 실패");
     sprite.setTexture(texture);
@@ -32,7 +32,14 @@ MushroomItem::MushroomItem(const std::string& texturePath, sf::Vector2f position
 }
 void MushroomItem::applyEffect(Player& player) {
     // 커지기 효과
-    player.setScale(2.0f); // Player에 setScale 함수 필요
+    player.setIsBig(true);
+}
+GreenMushroomItem::GreenMushroomItem(const std::string& texturePath, sf::Vector2f position)
+    : Item(texturePath, position) {
+}
+void GreenMushroomItem::applyEffect(Player& player) {
+    // 목숨 증가 효과
+    player.increaseLife(1);    // 생명 증가
 }
 
 // 코인 아이템 cpp

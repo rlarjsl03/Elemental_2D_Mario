@@ -58,9 +58,9 @@ int main() {
         return 1;
     }
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.push_back(std::make_unique<Enemy>(cupaTexture, sf::Vector2f(9500.f, groundY)));
-    enemies.push_back(std::make_unique<Enemy>(goombaTexture, sf::Vector2f(3000.f, groundY)));
-    enemies.push_back(std::make_unique<Enemy>(turtleTexture, sf::Vector2f(4000.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(cupaTexture, sf::Vector2f(4500.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(goombaTexture, sf::Vector2f(1200.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(turtleTexture, sf::Vector2f(2750.f, groundY)));
 
     sf::Clock clock;
 
@@ -71,9 +71,13 @@ int main() {
     items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(1500.0f, groundY - 75.f))); // 코인
     items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(1600.0f, groundY - 75.f))); // 코인
     items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(1700.0f, groundY - 75.f))); // 코인
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(2800.0f, groundY - 75.f))); // 코인
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(2900.0f, groundY - 75.f))); // 코인
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(3100.0f, groundY - 75.f))); // 코인
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(3200.0f, groundY - 75.f))); // 코인
     items.push_back(std::make_unique<MushroomItem>("RedMushroom.png", Vector2f(800.0f, groundY - 75.f))); // 버섯
     items.push_back(std::make_unique<GreenMushroomItem>("GreenMushroom.png", Vector2f(3000.0f, groundY - 75.f))); // 버섯
-    items.push_back(std::make_unique<FlagItem>("Flag.png", Vector2f(9500.0f, groundY - 500.f))); // 깃발
+    items.push_back(std::make_unique<FlagItem>("Flag.png", Vector2f(4750.0f, groundY - 500.f))); // 깃발
 
     // GameObject들을 담을 벡터 선언
     std::vector<std::unique_ptr<GameObject>> gameObjects;
@@ -214,7 +218,7 @@ int main() {
     font.loadFromFile("arial.ttf"); // 폰트 파일은 프로젝트에 있어야 함
     // 맵의 경계 설정: 플레이어가 "계속 갈 수 있게" 하려면 MAP_WIDTH를 매우 크게 설정
     // 이렇게 하면 뷰가 맵 끝에 도달하여 멈추는 일은 거의 없을 것입니다.
-    const float MAP_WIDTH = 10000.f; // 매우 큰 값으로 설정
+    const float MAP_WIDTH = 5000.f; // 매우 큰 값으로 설정
     const float VIEW_WIDTH = gameView.getSize().x;
     const float VIEW_HEIGHT = gameView.getSize().y;
 

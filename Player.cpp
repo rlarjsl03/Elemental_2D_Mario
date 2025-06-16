@@ -123,7 +123,16 @@ void Player::bounceJump() {
 }
 
 void Player::draw(RenderWindow& window) {
-    window.draw(sprite);
+    if (isInvincible) {
+        flickerTimer += 0.016f; // 대충 프레임당 0.016초(60FPS 기준)
+        if (static_cast<int>(flickerTimer / flickerInterval) % 2 == 0) {
+            window.draw(sprite); // 보임
+        }
+        // else일 땐 안 그림 (깜빡임 효과)
+    }
+    else {
+        window.draw(sprite); // 무적이 아니면 항상 그림
+    }
 }
 
 const Sprite& Player::getSprite() const {
@@ -178,9 +187,21 @@ void Player::setIsBig(bool big) { isBig = big; }
 
 void Player::setInvincible(bool value) {
     isInvincible = value;
-    if (!value) invincibilityTimer = 0.f;
+    if (!value) {
+        invincibilityTimer = 0.f;
+        flickerTimer = 0.f; // 깜빡임도 초기화
+    }
 }
 
 bool Player::getisInvincible() const {
     return isInvincible;
+}
+
+FloatRect Player::getHitBox() const {
+    FloatRect bounds = sprite.getGlobalBounds();
+    bounds.left += 10.f; // 좌우 여백 제거
+    bounds.width -= 20.f;
+    bounds.top += 10.f;  // 위쪽 여백 제거
+    bounds.height -= 15.f;
+    return bounds;
 }

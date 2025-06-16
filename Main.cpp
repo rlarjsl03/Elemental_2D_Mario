@@ -120,15 +120,19 @@ int main() {
         for (auto& enemy : enemies) {
             enemy->update(deltaTime, groundY);    // groundY = 920.f
 
-            sf::FloatRect enemyBounds = enemy->getSprite().getGlobalBounds();
+            //sf::FloatRect enemyBounds = enemy->getSprite().getGlobalBounds();
+            sf::FloatRect playerHitBox = player.getHitBox();
+            sf::FloatRect enemyHitBox = enemy->getHitBox();  // 적 클래스에 이 함수가 있다고 했으니
 
-            if (!player.getisInvincible() && playerBounds.intersects(enemyBounds)) {
-                float playerBottom = playerBounds.top + playerBounds.height;
-                float enemyTop = enemyBounds.top;
 
-                if (player.getVelocity().y > 0.f && playerBottom < enemyTop + 10.f) {
-                    enemy->takeDamage(100); // 적 제거
-                    player.bounceJump();    // 튕기기
+            if (!player.getisInvincible() && playerHitBox.intersects(enemyHitBox)) {
+                float playerBottom = playerHitBox.top + playerHitBox.height;
+                float enemyTop = enemyHitBox.top;
+
+                // "적 위에서 밟은 경우"를 좀 더 엄격하게 체크
+                if (player.getVelocity().y > 0.f && playerBottom <= enemyTop + 5.f) {
+                    enemy->takeDamage(100);
+                    player.bounceJump();
                 }
                 else {
                     if (player.getIsBig()) {

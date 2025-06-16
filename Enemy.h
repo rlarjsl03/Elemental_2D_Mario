@@ -14,6 +14,7 @@ public:
     bool isActive() const;
 
     const sf::Sprite& getSprite() const;
+    sf::FloatRect getHitBox() const;
 
 private:
     sf::Sprite sprite;

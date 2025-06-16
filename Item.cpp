@@ -33,6 +33,12 @@ MushroomItem::MushroomItem(const std::string& texturePath, sf::Vector2f position
 void MushroomItem::applyEffect(Player& player) {
     // 커지기 효과
     player.setIsBig(true);
+}
+GreenMushroomItem::GreenMushroomItem(const std::string& texturePath, sf::Vector2f position)
+    : Item(texturePath, position) {
+}
+void GreenMushroomItem::applyEffect(Player& player) {
+    // 목숨 증가 효과
     player.increaseLife(1);    // 생명 증가
 }
 

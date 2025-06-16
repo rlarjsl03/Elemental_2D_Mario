@@ -35,9 +35,13 @@ private:
     bool isDead = false;
     int life = 1; // 초기 생명 수 설정
     bool isBig = false;
+
+	// 충돌 관련 변수
     bool isInvincible = false;
     float invincibilityTimer = 0.f;
     const float invincibilityDuration = 2.f; // 무적 시간 2초
+    float flickerTimer = 0.f;
+    float flickerInterval = 0.1f; // 깜빡임 간격 (0.1초 간격)
 
 public:
     Player();
@@ -64,4 +68,5 @@ public:
     void setIsBig(bool big);
     void setInvincible(bool value);
     bool getisInvincible() const;
+    FloatRect getHitBox() const;
 };

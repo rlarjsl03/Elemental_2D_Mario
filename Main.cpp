@@ -3,8 +3,8 @@
 #include <SFML/Window.hpp>
 #include <vector>
 #include <memory>    // std::unique_ptr 사용
-#include <cstdlib>   // std::srand, rand 사용
-#include <ctime>     // std::time 사용
+#include <cstdlib>    // std::srand, rand 사용
+#include <ctime>      // std::time 사용
 #include <iostream>  // std::cerr, std::cout 사용
 #include <algorithm> // std::remove_if 를 위해 추가
 
@@ -33,11 +33,14 @@ int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr))); // 난수 생성기 초기화 (적 리스폰 등에 사용)
 
     // 윈도우 생성 (해상도 1920x1080, 제목 "Player Control")
-    sf::RenderWindow window(sf::VideoMode(1920, 1080), "Player Control");
+    sf::RenderWindow window(sf::VideoMode(1920, 1080), "2D Mario Game");
     window.setFramerateLimit(60); // 프레임 속도를 60FPS로 제한
 
     // --- 게임 기본 변수 ---
     float groundY = 920.f; // 게임 내 지면의 Y 좌표
+    // 마리오의 최대 점프 높이를 고려하여, 점프 가능한 최대 Y 좌표 (더 낮을수록 위쪽)
+    const float MARIO_MAX_JUMP_HEIGHT = 600.f; // 마리오가 지면으로부터 최대로 점프할 수 있는 높이
+    const float MARIO_REACHABLE_MIN_Y = groundY - MARIO_MAX_JUMP_HEIGHT; // 마리오가 도달할 수 있는 가장 높은 지점의 Y 좌표
 
     // --- 플레이어 초기화 ---
     Player player;
@@ -91,134 +94,152 @@ int main() {
     const float ORIGINAL_PLATFORM_WIDTH = 336.f;  // "platform.png"의 실제 픽셀 너비 (예: 70)
 
 
-    // --- 파이프 추가 및 크기/위치 조절 (수동 Y 위치 조정) ---
+    // --- 맵의 경계 설정: 플레이어가 계속 갈 수 있게 매우 크게 설정
+    const float MAP_WIDTH = 10000.f; // 매우 큰 맵 너비
 
-    // 짧은 파이프
-    float pipe1X = 1000.f;
-    float pipe1ScaleY = 0.35f;
-    float pipe1ScaleX = 0.25f;
-    float pipe1Y = groundY - (ORIGINAL_PIPE_HEIGHT * pipe1ScaleY); // 파이프 높이에 맞춰 groundY에 정렬
-    auto pipe1 = std::make_unique<Pipe>("Pipe.png", sf::Vector2f(pipe1X, pipe1Y));
-    pipe1->getSprite().setScale(pipe1ScaleX, pipe1ScaleY);
-    gameObjects.push_back(std::move(pipe1));
+    // --- 맵 끝까지 파이프, 플랫폼, 미스터리 블록 추가 ---
+    // 시작 X 위치 설정 (기존 오브젝트 이후부터 시작)
+    float currentX = 1000.f; // 첫 파이프 시작 위치부터 이어서 배치
 
-    // 중간 파이프
-    float pipe2X = 2500.f;
-    float pipe2ScaleY = 0.35f;
-    float pipe2ScaleX = 0.3f;
-    float pipe2Y = groundY - (ORIGINAL_PIPE_HEIGHT * pipe2ScaleY);
-    auto pipe2 = std::make_unique<Pipe>("pipe.png", sf::Vector2f(pipe2X, pipe2Y));
-    pipe2->getSprite().setScale(pipe2ScaleX, pipe2ScaleY);
-    gameObjects.push_back(std::move(pipe2));
+    // 마리오가 점프하여 도달할 수 있는 오브젝트의 최소 높이 (지면으로부터)
+    // 오브젝트의 아랫면이 이 값보다 아래(Y값이 클수록) 있어야 마리오가 밟을 수 있습니다.
+    // 마리오 스프라이트의 높이도 고려해야 점프해서 올라갔을 때 겹치지 않고 잘 서 있을 수 있습니다.
+    // 플레이어의 스프라이트 높이에 따라 이 값을 조정해야 할 수 있습니다.
+    // 여기서는 일단 마리오 머리 위 공간을 충분히 확보하는 정도로 설정합니다.
+    const float MARIO_PLAYER_HEIGHT_OFFSET = 100.f; // 마리오의 대략적인 높이 (픽셀) 또는 여유 공간
+    const float MAX_OBJECT_TOP_Y = groundY - (MARIO_MAX_JUMP_HEIGHT - MARIO_PLAYER_HEIGHT_OFFSET); // 오브젝트의 상단이 이 Y 좌표보다 아래에 있어야 함 (Y값이 클수록 아래)
 
-    // 긴 파이프
-    float pipe3X = 3500.f;
-    float pipe3ScaleY = 0.35f;
-    float pipe3ScaleX = 0.3f;
-    float pipe3Y = groundY - (ORIGINAL_PIPE_HEIGHT * pipe3ScaleY);
-    auto pipe3 = std::make_unique<Pipe>("pipe.png", sf::Vector2f(pipe3X, pipe3Y));
-    pipe3->getSprite().setScale(pipe3ScaleX, pipe3ScaleY);
-    gameObjects.push_back(std::move(pipe3));
+    while (currentX < MAP_WIDTH - 500.f) { // 맵 끝에서 500px 전에 멈추도록 설정
+        int objectType = rand() % 3; // 0: 파이프, 1: 플랫폼, 2: 미스터리 블록 (혹은 조합)
 
-    // --- 플랫폼 & 미스터리 블록 쌍 추가 및 크기/위치 조절 (좌우 정렬) ---
+        if (objectType == 0) { // 파이프
+            float pipeScaleY = 0.3f + static_cast<float>(rand() % 20) / 100.f; // 0.3 ~ 0.49 사이 랜덤 스케일
+            float pipeScaleX = 0.25f + static_cast<float>(rand() % 10) / 100.f; // 0.25 ~ 0.34 사이 랜덤 스케일
+            float pipeY = groundY - (ORIGINAL_PIPE_HEIGHT * pipeScaleY); // 파이프는 항상 지면에 고정
 
-    // 쌍 1: 플랫폼 옆에 미스터리 블록 (코인 아이템)
-    float pair1CurrentX = 1400.f; // 이 구조의 시작 X 위치
-    float pair1BaseY = groundY - 200.f; // 플랫폼과 블록의 Y 위치
+            // 파이프 상단이 마리오가 점프해서 도달 가능한 범위를 넘지 않도록 제한
+            // 파이프 상단 Y = pipeY
+            if (pipeY < MARIO_REACHABLE_MIN_Y) { // 만약 파이프가 너무 높다면
+                pipeScaleY = (groundY - MARIO_REACHABLE_MIN_Y) / ORIGINAL_PIPE_HEIGHT; // 점프 가능 높이에 맞춰 스케일 재조정
+                pipeY = groundY - (ORIGINAL_PIPE_HEIGHT * pipeScaleY); // Y 위치도 재계산
+            }
 
-    float platform1ScaleX = 0.3f;
-    float platform1ScaleY = 0.3f;
+            auto pipe = std::make_unique<Pipe>("Pipe.png", sf::Vector2f(currentX, pipeY));
+            pipe->getSprite().setScale(pipeScaleX, pipeScaleY);
+            gameObjects.push_back(std::move(pipe));
+            currentX += (ORIGINAL_PIPE_WIDTH * pipeScaleX) + (rand() % 300 + 100.f); // 파이프 너비 + 랜덤 간격 추가
+        }
+        else if (objectType == 1) { // 플랫폼 또는 플랫폼-블록 조합
+            float platformScaleX = 0.3f;
+            float platformScaleY = 0.3f;
+            // 플랫폼의 Y 위치는 groundY - (마리오가 점프할 수 있는 최대 높이 범위 내)로 설정
+            // platformY가 작을수록 위에 위치합니다.
+            // groundY - 200.f (최소 높이) ~ MAX_OBJECT_TOP_Y (최대 높이) 범위에서 랜덤
+            float platformY = groundY - (200.f + static_cast<float>(rand() % static_cast<int>(MARIO_MAX_JUMP_HEIGHT - 200.f - MARIO_PLAYER_HEIGHT_OFFSET)));
+            if (platformY < MARIO_REACHABLE_MIN_Y + ORIGINAL_PLATFORM_HEIGHT * platformScaleY) { // 너무 높으면 조정 (플랫폼 바닥 기준)
+                platformY = MARIO_REACHABLE_MIN_Y + ORIGINAL_PLATFORM_HEIGHT * platformScaleY;
+            }
+            if (platformY > groundY - (ORIGINAL_PLATFORM_HEIGHT * platformScaleY)) { // 지면에 너무 가까우면 조정
+                platformY = groundY - (ORIGINAL_PLATFORM_HEIGHT * platformScaleY);
+            }
 
-    auto platform1 = std::make_unique<Platform>("platform.png", sf::Vector2f(pair1CurrentX, pair1BaseY));
-    platform1->getSprite().setScale(platform1ScaleX, platform1ScaleY);
-    gameObjects.push_back(std::move(platform1));
-    pair1CurrentX += (ORIGINAL_PLATFORM_WIDTH * platform1ScaleX); // 다음 객체 시작 X 업데이트
+            auto platform = std::make_unique<Platform>("platform.png", sf::Vector2f(currentX, platformY));
+            platform->getSprite().setScale(platformScaleX, platformScaleY);
+            gameObjects.push_back(std::move(platform));
+            currentX += (ORIGINAL_PLATFORM_WIDTH * platformScaleX); // 플랫폼 너비만큼 이동
 
-    // 플랫폼 옆에 딱 붙는 미스터리 블록
-    float mysteryBlock1ScaleX = 0.3f;
-    float mysteryBlock1ScaleY = 0.3f;
-    // Y 위치는 플랫폼과 동일하게 설정하거나, 플랫폼 위에 오도록 계산할 수 있습니다.
-    // 지금은 플랫폼과 같은 Y 레벨에 배치합니다.
-    float mysteryBlock1Y = pair1BaseY;
+            // 50% 확률로 플랫폼 옆에 미스터리 블록 추가
+            if (rand() % 2 == 0) {
+                float mysteryBlockScaleX = 0.3f;
+                float mysteryBlockScaleY = 0.3f;
+                float mysteryBlockY = platformY; // 플랫폼과 같은 높이에 배치
 
-    auto mysteryBlock1 = std::make_unique<MysteryBlock>(
-        "mysteryblock.png",
-        "deadblock.png",
-        sf::Vector2f(pair1CurrentX, mysteryBlock1Y),
-        std::make_unique<CoinItem>("Coin.png", sf::Vector2f(0, 0))
-    );
-    mysteryBlock1->getSprite().setScale(mysteryBlock1ScaleX, mysteryBlock1ScaleY);
-    gameObjects.push_back(std::move(mysteryBlock1));
-    pair1CurrentX += (ORIGINAL_BLOCK_WIDTH * mysteryBlock1ScaleX); // 다음 객체 시작 X 업데이트 (선택 사항)
+                // 어떤 아이템을 스폰할지 랜덤으로 결정
+                std::unique_ptr<Item> itemToSpawn;
+                int itemType = rand() % 3; // 0: 코인, 1: 버섯, 2: 녹색 버섯
+                if (itemType == 0) {
+                    itemToSpawn = std::make_unique<CoinItem>("Coin.png", sf::Vector2f(0, 0));
+                }
+                else if (itemType == 1) {
+                    itemToSpawn = std::make_unique<MushroomItem>("Mushroom.png", sf::Vector2f(0, 0));
+                }
+                else {
+                    itemToSpawn = std::make_unique<GreenMushroomItem>("GreenMushroom.png", sf::Vector2f(0, 0));
+                }
 
+                auto mysteryBlock = std::make_unique<MysteryBlock>(
+                    "mysteryblock.png",
+                    "deadblock.png",
+                    sf::Vector2f(currentX, mysteryBlockY),
+                    std::move(itemToSpawn)
+                );
+                mysteryBlock->getSprite().setScale(mysteryBlockScaleX, mysteryBlockScaleY);
+                gameObjects.push_back(std::move(mysteryBlock));
+                currentX += (ORIGINAL_BLOCK_WIDTH * mysteryBlockScaleX); // 블록 너비만큼 이동
+            }
+            currentX += (rand() % 400 + 150.f); // 플랫폼/블록 조합 이후 랜덤 간격 추가
+        }
+        else { // 미스터리 블록 단독 또는 연속
+            float mysteryBlockScaleX = 0.3f;
+            float mysteryBlockScaleY = 0.3f;
+            // 미스터리 블록의 Y 위치도 마리오 점프 높이 범위 내로 설정
+            float mysteryBlockY = groundY - (200.f + static_cast<float>(rand() % static_cast<int>(MARIO_MAX_JUMP_HEIGHT - 200.f - MARIO_PLAYER_HEIGHT_OFFSET)));
+            if (mysteryBlockY < MARIO_REACHABLE_MIN_Y + ORIGINAL_BLOCK_HEIGHT * mysteryBlockScaleY) { // 너무 높으면 조정 (블록 바닥 기준)
+                mysteryBlockY = MARIO_REACHABLE_MIN_Y + ORIGINAL_BLOCK_HEIGHT * mysteryBlockScaleY;
+            }
+            if (mysteryBlockY > groundY - (ORIGINAL_BLOCK_HEIGHT * mysteryBlockScaleY)) { // 지면에 너무 가까우면 조정
+                mysteryBlockY = groundY - (ORIGINAL_BLOCK_HEIGHT * mysteryBlockScaleY);
+            }
 
-    // 쌍 2: 좀 더 높은 플랫폼 옆에 미스터리 블록 (버섯 아이템)
-    float pair2CurrentX = 1800.f;
-    float pair2BaseY = groundY - 400.f; // 더 높은 Y 위치
+            // 어떤 아이템을 스폰할지 랜덤으로 결정
+            std::unique_ptr<Item> itemToSpawn;
+            int itemType = rand() % 3; // 0: 코인, 1: 버섯, 2: 녹색 버섯
+            if (itemType == 0) {
+                itemToSpawn = std::make_unique<CoinItem>("Coin.png", sf::Vector2f(0, 0));
+            }
+            else if (itemType == 1) {
+                itemToSpawn = std::make_unique<MushroomItem>("Mushroom.png", sf::Vector2f(0, 0));
+            }
+            else {
+                itemToSpawn = std::make_unique<GreenMushroomItem>("GreenMushroom.png", sf::Vector2f(0, 0));
+            }
 
-    float platform2ScaleX = 0.3f;
-    float platform2ScaleY = 0.3f;
+            auto mysteryBlock = std::make_unique<MysteryBlock>(
+                "mysteryblock.png",
+                "deadblock.png",
+                sf::Vector2f(currentX, mysteryBlockY),
+                std::move(itemToSpawn)
+            );
+            mysteryBlock->getSprite().setScale(mysteryBlockScaleX, mysteryBlockScaleY);
+            gameObjects.push_back(std::move(mysteryBlock));
+            currentX += (ORIGINAL_BLOCK_WIDTH * mysteryBlockScaleX) + (rand() % 200 + 50.f); // 블록 너비 + 랜덤 간격 추가
 
-    auto platform2 = std::make_unique<Platform>("platform.png", sf::Vector2f(pair2CurrentX, pair2BaseY));
-    platform2->getSprite().setScale(platform2ScaleX, platform2ScaleY);
-    gameObjects.push_back(std::move(platform2));
-    pair2CurrentX += (ORIGINAL_PLATFORM_WIDTH * platform2ScaleX); // 다음 객체 시작 X 업데이트
-
-    float mysteryBlock2ScaleX = 0.3f;
-    float mysteryBlock2ScaleY = 0.3f;
-    float mysteryBlock2Y = pair2BaseY; // 플랫폼과 같은 Y 레벨에 배치
-
-    auto mysteryBlock2 = std::make_unique<MysteryBlock>(
-        "mysteryblock.png",
-        "deadblock.png",
-        sf::Vector2f(pair2CurrentX, mysteryBlock2Y),
-        std::make_unique<MushroomItem>("Mushroom.png", sf::Vector2f(0, 0))
-    );
-    mysteryBlock2->getSprite().setScale(mysteryBlock2ScaleX, mysteryBlock2ScaleY);
-    gameObjects.push_back(std::move(mysteryBlock2));
-    pair2CurrentX += (ORIGINAL_BLOCK_WIDTH * mysteryBlock2ScaleX); // 다음 객체 시작 X 업데이트 (선택 사항)
-
-
-    // 쌍 3: 여러 개의 블록과 플랫폼으로 이루어진 구조 (예시) - 좌우 정렬
-    float pair3CurrentX = 4000.f; // 이 구조의 시작 X 위치
-    float pair3BaseY = groundY - 200.f; // 이 구조의 기본 Y 위치
-
-    // 첫 번째 미스터리 블록
-    float mysteryBlock3_1ScaleX = 0.3f;
-    float mysteryBlock3_1ScaleY = 0.3f;
-    auto mysteryBlock3_1 = std::make_unique<MysteryBlock>(
-        "mysteryblock.png",
-        "deadblock.png",
-        sf::Vector2f(pair3CurrentX, pair3BaseY),
-        std::make_unique<CoinItem>("Coin.png", sf::Vector2f(0, 0))
-    );
-    mysteryBlock3_1->getSprite().setScale(mysteryBlock3_1ScaleX, mysteryBlock3_1ScaleY);
-    gameObjects.push_back(std::move(mysteryBlock3_1));
-    pair3CurrentX += (ORIGINAL_BLOCK_WIDTH * mysteryBlock3_1ScaleX); // 다음 객체 시작 X 업데이트
-
-    // 첫 번째 블록 옆에 플랫폼 (높이 동일)
-    float platform3ScaleX = 0.3f;
-    float platform3ScaleY = 0.3f;
-    auto platform3 = std::make_unique<Platform>("platform.png", sf::Vector2f(pair3CurrentX, pair3BaseY));
-    platform3->getSprite().setScale(platform3ScaleX, platform3ScaleY);
-    gameObjects.push_back(std::move(platform3));
-    pair3CurrentX += (ORIGINAL_PLATFORM_WIDTH * platform3ScaleX); // 다음 객체 시작 X 업데이트
-
-    // 플랫폼 옆에 또 다른 미스터리 블록 (높이 동일)
-    float mysteryBlock3_2ScaleX = 0.3f;
-    float mysteryBlock3_2ScaleY = 0.3f;
-    float mysteryBlock3_2Y = pair3BaseY; // 플랫폼과 같은 Y 레벨에 배치
-
-    auto mysteryBlock3_2 = std::make_unique<MysteryBlock>(
-        "mysteryblock.png",
-        "deadblock.png",
-        sf::Vector2f(pair3CurrentX, mysteryBlock3_2Y),
-        std::make_unique<MushroomItem>("Mushroom.png", sf::Vector2f(0, 0))
-    );
-    mysteryBlock3_2->getSprite().setScale(mysteryBlock3_2ScaleX, mysteryBlock3_2ScaleY);
-    gameObjects.push_back(std::move(mysteryBlock3_2));
-    // 이 뒤에 더 많은 오브젝트를 추가할 경우 pair3CurrentX를 계속 업데이트하면 됩니다.
-
+            // 30% 확률로 블록 하나 더 추가 (연속 블록처럼 보이게)
+            if (rand() % 10 < 3) {
+                // 어떤 아이템을 스폰할지 랜덤으로 결정 (두 번째 블록용)
+                std::unique_ptr<Item> itemToSpawn2;
+                int itemType2 = rand() % 3; // 0: 코인, 1: 버섯, 2: 녹색 버섯
+                if (itemType2 == 0) {
+                    itemToSpawn2 = std::make_unique<CoinItem>("Coin.png", sf::Vector2f(0, 0));
+                }
+                else if (itemType2 == 1) {
+                    itemToSpawn2 = std::make_unique<MushroomItem>("Mushroom.png", sf::Vector2f(0, 0));
+                }
+                else {
+                    itemToSpawn2 = std::make_unique<GreenMushroomItem>("GreenMushroom.png", sf::Vector2f(0, 0));
+                }
+                auto mysteryBlock2 = std::make_unique<MysteryBlock>(
+                    "mysteryblock.png",
+                    "deadblock.png",
+                    sf::Vector2f(currentX, mysteryBlockY), // 같은 Y 높이
+                    std::move(itemToSpawn2)
+                );
+                mysteryBlock2->getSprite().setScale(mysteryBlockScaleX, mysteryBlockScaleY);
+                gameObjects.push_back(std::move(mysteryBlock2));
+                currentX += (ORIGINAL_BLOCK_WIDTH * mysteryBlockScaleX) + (rand() % 100 + 20.f); // 블록 너비 + 작은 간격
+            }
+        }
+    }
 
     // --- SFML View (카메라) 설정 ---
     sf::View gameView(sf::FloatRect(0, 0, 1920, 1080)); // 윈도우와 동일한 크기의 뷰 생성
@@ -230,8 +251,6 @@ int main() {
         return 1;
     }
 
-    // 맵의 경계 설정: 플레이어가 계속 갈 수 있게 매우 크게 설정
-    const float MAP_WIDTH = 10000.f; // 매우 큰 맵 너비
     const float VIEW_WIDTH = gameView.getSize().x;
     const float VIEW_HEIGHT = gameView.getSize().y;
 
@@ -365,7 +384,7 @@ int main() {
 
             // 간단한 Game Over 메시지 표시
             sf::Text gameOverText("Game Over", font, 100); // 폰트와 크기 설정
-            gameOverText.setFillColor(sf::Color::Red);        // 텍스트 색상 빨간색
+            gameOverText.setFillColor(sf::Color::Red);         // 텍스트 색상 빨간색
             // 뷰의 중앙에 메시지 위치 설정
             gameOverText.setPosition(gameView.getCenter().x - gameOverText.getGlobalBounds().width / 2.f,
                 gameView.getCenter().y - gameOverText.getGlobalBounds().height / 2.f);
@@ -379,7 +398,7 @@ int main() {
 
         // --- 렌더링 (그리기) ---
         window.clear(sf::Color::White); // 배경을 흰색으로 지웁니다. (사실상 배경 이미지로 덮힘)
-        gameBackground.draw(window);       // 배경을 그립니다.
+        gameBackground.draw(window);        // 배경을 그립니다.
 
         // 게임 오브젝트(파이프, 플랫폼, 미스터리 블록) 그리기
         // 플레이어보다 먼저 그려야 플레이어가 오브젝트 위에 올라선 것처럼 보입니다.

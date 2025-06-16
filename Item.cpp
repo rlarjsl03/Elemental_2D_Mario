@@ -1,3 +1,4 @@
+// item.cpp
 #include "Item.h"
 
 Item::Item(const std::string& texturePath, sf::Vector2f startPos) : position(startPos) {
@@ -25,6 +26,13 @@ bool Item::checkCollision(const sf::Sprite& playerSprite) {
 bool Item::isCollected() const { return collected; }
 
 const sf::Sprite& Item::getSprite() const { return sprite; }
+
+// Item::setPosition 함수 구현 추가
+void Item::setPosition(float x, float y) {
+    sprite.setPosition(x, y);
+    position = sf::Vector2f(x, y);
+}
+
 
 // 버섯 아이템 cpp
 MushroomItem::MushroomItem(const std::string& texturePath, sf::Vector2f position)

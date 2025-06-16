@@ -2,14 +2,20 @@
 #include "Player.h"
 #include <stdexcept> // std::runtime_error를 위해 포함
 #include <cmath>     // std::abs를 위해 포함
+#include <iostream>  // 디버깅용
 
 using namespace sf;
 
 Player::Player()
-    : velocity(0.f, 0.f), speed(500.f), gravity(700.f),
-    groundY(920.f), jumpPower(-400.f), isOnGround(false),
+// velocity를 m_velocity로, isOnGround를 m_isOnGround로 변경 (멤버 변수 이름 변경)
+    : m_velocity(0.f, 0.f), speed(500.f), gravity(700.f),
+    groundY(920.f), jumpPower(-600.f), m_isOnGround(false), // m_isOnGround 초기화
     currentFrame(100), frameTime(0.1f), frameTimer(0.f), frameCount(6),
-    frameWidth(100), frameHeight(106), facingRight(true) {
+    frameWidth(100), frameHeight(106), facingRight(true),
+    score(0), drawSprite(true), isDead(false), life(1), isBig(false), // 추가된 변수 초기화
+    isInvincible(false), invincibilityTimer(0.f), flickerTimer(0.f) // 무적 관련 변수 초기화
+    ,col(0), row(0)
+{
     if (!texture.loadFromFile("Mario_SpraySheet_padded_top.png")) {
         throw std::runtime_error("이미지를 불러올 수 없습니다: Mario_SpraySheet_padded_top.png");
     }
@@ -17,8 +23,8 @@ Player::Player()
     sprite.setTextureRect(IntRect(0, 0, frameWidth, frameHeight));
     sprite.setScale(-1.5f, 1.5f); // 오른쪽을 바라보도록 설정
     sprite.setOrigin(frameWidth / 2.f, 0.f); // 스프라이트의 중심을 왼쪽 아래로 설정(좌우 반전 시 대칭 맞추기)
-    //sprite.setPosition(200.0f, 400.0f);
 }
+
 // 키 입력 처리
 void Player::handleInput(float deltaTime) {
     Vector2f direction(0.f, 0.f);
@@ -31,7 +37,7 @@ void Player::handleInput(float deltaTime) {
         facingRight = true; // 오른쪽 보기
     }
 
-    velocity.x = direction.x * speed; // 플레이어의 x 속도 업데이트
+    m_velocity.x = direction.x * speed; // 플레이어의 x 속도 업데이트
     sprite.move(direction * speed * deltaTime);
 
     // 방향에 따라 스프라이트 반전
@@ -40,9 +46,9 @@ void Player::handleInput(float deltaTime) {
     else
         sprite.setScale(1.5f, 1.5f); // 왼쪽 보기 (좌우 반전)
 
-    if (Keyboard::isKeyPressed(Keyboard::Space) && isOnGround) {
-        velocity.y = jumpPower;
-        isOnGround = false;
+    if (Keyboard::isKeyPressed(Keyboard::Space) && m_isOnGround) { // m_isOnGround 사용
+        m_velocity.y = jumpPower; // m_velocity 사용
+        m_isOnGround = false; // m_isOnGround 사용
     }
     else if (Keyboard::isKeyPressed(Keyboard::Escape)) {
         exit(0); // 게임 종료
@@ -59,18 +65,17 @@ void Player::updateAnimation(float deltaTime) {
     animationTimer += deltaTime;
 
     // 움직이고 있는지 판단 (속도나 키 입력으로)
-    bool isMoving = std::abs(velocity.x) > 1.0f || Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::Right);
-	//int frameX = isBig ? 4 : 1; // 큰 마리오면 4, 아니면 1
-    int frameY = isBig ? 2 : 0;  // 큰 마리오면 1행, 아니면 0행
+    bool isMoving = std::abs(m_velocity.x) > 1.0f || Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::Right); // m_velocity 사용
+    int frameY = isBig ? 2 : 0;  // 큰 마리오면 2행, 아니면 0행 (스프라이트 시트 기준)
 
     if (!isMoving) {
-        // 멈춰 있을 때 → (4,0)
+        // 멈춰 있을 때 → (4,0) 또는 (4,2)
         setFrame(4, frameY);
     }
     else {
-        // 움직일 때 → (4,0) ↔ (1,0)
+        // 움직일 때 → (4,0) ↔ (1,0) 또는 (4,2) ↔ (1,2)
         if (animationTimer >= frameDuration) {
-            animationTimer = 0.f; // 타이머 리셋, 0.05f가 아니라 0.f로 해야 정확한 시간 간격이 됩니다.
+            animationTimer = 0.f; // 타이머 리셋
 
             if (currentFrameIndex == 0) {
                 setFrame(4, frameY);
@@ -86,53 +91,53 @@ void Player::updateAnimation(float deltaTime) {
 
 void Player::update(float deltaTime) {
     // 중력 적용
-    velocity.y += gravity * deltaTime;
-    sprite.move(0.f, velocity.y * deltaTime);
+    m_velocity.y += gravity * deltaTime; // m_velocity 사용
+    sprite.move(0.f, m_velocity.y * deltaTime); // m_velocity 사용
 
     // 무적 상태 확인
     if (isInvincible) {
         invincibilityTimer += deltaTime;
+        flickerTimer += deltaTime;
+
+        if (flickerTimer >= flickerInterval) {
+            drawSprite = !drawSprite; // 스프라이트 그릴지 말지 토글
+            flickerTimer -= flickerInterval; // 타이머 감소 (잔여 시간으로 만듦)
+        }
+
         if (invincibilityTimer >= invincibilityDuration) {
             isInvincible = false;
-            invincibilityTimer = 2.f;
+            invincibilityTimer = 0.f; // 타이머를 0으로 초기화
+            drawSprite = true; // 무적 끝나면 다시 보이게
+            flickerTimer = 0.f; // 깜빡임 타이머도 초기화
         }
     }
-    else
-		setInvincible(false);   // 무적 상태가 아니면 무적 타이머 초기화
 
     // 바닥 충돌 처리
-    // sprite.getScale().y는 스케일 비율입니다. 실제 높이를 얻으려면 텍스처의 원본 높이에 스케일을 곱해야 합니다.
-    // sprite.getGlobalBounds().height를 사용하는 것이 더 정확합니다.
     float bottom = sprite.getPosition().y + sprite.getGlobalBounds().height;
     if (bottom >= groundY) {
         sprite.setPosition(sprite.getPosition().x, groundY - sprite.getGlobalBounds().height);
-        velocity.y = 0;
-        isOnGround = true;
+        m_velocity.y = 0; // m_velocity 사용
+        m_isOnGround = true; // m_isOnGround 사용
     }
-    else {
-        isOnGround = false;
-    }
+    // else 문을 제거하여 공중에 있을 때 m_isOnGround가 false로 유지되도록 합니다.
+    // 하지만 점프 등으로 바닥에서 떨어질 때는 `m_isOnGround = false;`가 명시적으로 호출되어야 합니다.
+    // 현재 `handleInput`에서 점프 시 `m_isOnGround = false;`를 호출하고 있으므로 괜찮습니다.
 
     updateAnimation(deltaTime);
 }
 
 void Player::takeDamage(int amount) {
     // 플레이어 데미지 처리 (필요시 구현)
+    // 이 함수는 현재 사용되지 않으며, 충돌 처리 로직에서 직접 생명력 감소 및 무적 처리가 이루어집니다.
 }
 
 void Player::bounceJump() {
-    velocity.y = jumpPower;
-    isOnGround = false;
+    m_velocity.y = jumpPower; // m_velocity 사용
+    m_isOnGround = false; // m_isOnGround 사용
 }
 
 void Player::draw(RenderWindow& window) {
-    if (isInvincible) {
-        // 일정 주기마다 깜빡임: 0.1초 간격
-        if (static_cast<int>(invincibilityTimer * 10) % 2 == 0) {
-            window.draw(sprite); // 깜빡임 효과
-        }
-    }
-    else {
+    if (drawSprite) { // drawSprite 값에 따라 그릴지 말지 결정
         window.draw(sprite);
     }
 }
@@ -140,13 +145,13 @@ void Player::draw(RenderWindow& window) {
 const Sprite& Player::getSprite() const {
     return sprite;
 }
-// 플레이어의 스프라이트를 반환하는 함수
+
 void Player::setScale(float scale) {
     sprite.setScale((facingRight ? -1 : 1) * scale, scale);
 }
 
 void Player::addScore(int amount) {
-    // 점수 변수 만들고 += amount 처리
+    score += amount;
 }
 
 // --- 새로 추가된 함수들 구현 ---
@@ -157,10 +162,22 @@ void Player::setPosition(float x, float y) {
 
 // 플레이어 현재 속도 반환 함수 구현
 Vector2f Player::getVelocity() const {
-    return velocity;
+    return m_velocity; // m_velocity 반환
 }
+
+// 플레이어의 현재 위치를 반환하는 함수 추가
+sf::Vector2f Player::getPosition() const {
+    return sprite.getPosition();
+}
+
+// 플레이어의 전역 바운딩 박스를 반환하는 함수 추가
+sf::FloatRect Player::getGlobalBounds() const {
+    return sprite.getGlobalBounds();
+}
+
 void Player::die() {
     isDead = true;
+    std::cout << "Player has died!" << std::endl; // 디버깅 메시지
     // 죽었을 때 추가로 사운드 재생, 애니메이션 등도 여기에 구현 가능
 }
 
@@ -169,34 +186,57 @@ bool Player::isAlive() const {
 }
 void Player::increaseLife(int amount) {
     life += amount;
+    std::cout << "Life increased to: " << life << std::endl; // 디버깅 메시지
 }
 void Player::loseLife(int amount) {
     life -= amount;
     if (life < 0) {
         life = 0; // 생명이 0 이하로 떨어지지 않도록 보장
     }
-    getLife();
+    std::cout << "Life decreased to: " << life << std::endl; // 디버깅 메시지
 }
 int Player::getLife() const {
     return life;
 }
 
 bool Player::getIsBig() const { return isBig; }
-void Player::setIsBig(bool big) { 
-    isBig = big; 
-    getIsBig(); 
+void Player::setIsBig(bool big) {
+    isBig = big;
+    // 스프라이트 크기를 변경하여 큰 마리오/작은 마리오를 시각적으로 표현 (필요시)
+    if (isBig) {
+        // 큰 마리오일 때 스프라이트 시트의 다른 부분을 사용하도록 setFrame 조정하거나
+        // 스케일을 변경할 수 있습니다. (현재 애니메이션 로직은 frameY로 처리)
+        // sprite.setScale((facingRight ? -1.5f : 1.5f), 1.5f); // 예시
+    }
+    else {
+        // 작은 마리오일 때 (원래 스케일)
+        // sprite.setScale((facingRight ? -1.5f : 1.5f), 1.5f); // 예시
+    }
+    std::cout << "Player is now Big: " << (isBig ? "true" : "false") << std::endl; // 디버깅 메시지
 }
 
 void Player::setInvincible(bool value) {
     isInvincible = value;
-    if (!value) {
+    if (value) { // 무적 상태가 시작될 때 타이머 초기화
         invincibilityTimer = 0.f;
-        flickerTimer = 0.f; // 깜빡임도 초기화
+        flickerTimer = 0.f;
+        drawSprite = true; // 무적 시작 시에는 일단 보이게
     }
+    else { // 무적 상태가 끝날 때
+        invincibilityTimer = 0.f;
+        flickerTimer = 0.f;
+        drawSprite = true; // 무적 상태가 끝나면 다시 스프라이트를 그리도록 설정
+    }
+    std::cout << "Player is now Invincible: " << (isInvincible ? "true" : "false") << std::endl; // 디버깅 메시지
 }
 
 bool Player::getisInvincible() const {
     return isInvincible;
+}
+
+// setVelocityY 함수 구현 (player.cpp 에 추가)
+void Player::setVelocityY(float y) {
+    m_velocity.y = y;
 }
 
 FloatRect Player::getHitBox() const {

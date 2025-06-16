@@ -26,22 +26,25 @@ private:
     // 플레이어 관련 변수
     Texture texture;
     Sprite sprite;
-    Vector2f velocity; // <-- 여기에 velocity가 정의되어 있습니다.
+    // private 접근 제어자를 위해 m_ 접두사 추가
+    Vector2f m_velocity;
     float speed;
     float gravity;
     float groundY;
     float jumpPower;
-    bool isOnGround;
+    bool m_isOnGround; // private 접근 제어자를 위해 m_ 접두사 추가
     bool isDead = false;
     int life = 1; // 초기 생명 수 설정
     bool isBig = false;
+    int score = 0; // 점수 변수 추가
 
-	// 충돌 관련 변수
+    // 충돌 관련 변수
     bool isInvincible = false;
     float invincibilityTimer = 0.f;
     const float invincibilityDuration = 2.f; // 무적 시간 2초
     float flickerTimer = 0.f;
     float flickerInterval = 0.1f; // 깜빡임 간격 (0.1초 간격)
+    bool drawSprite = true; // 깜빡임 효과를 위한 변수
 
 public:
     Player();
@@ -56,16 +59,25 @@ public:
     void setScale(float scale);
     void addScore(int amount);
     // --- 새로 추가할 함수들 ---
-    void setPosition(float x, float y); // 플레이어 위치 설정 함수 추가};
+    void setPosition(float x, float y); // 플레이어 위치 설정 함수 추가
     Vector2f getVelocity() const;
+    void setVelocityY(float y); // m_velocity.y 값을 설정하는 함수 추가 (public에 선언)
+
+    sf::Vector2f getPosition() const; // 플레이어 현재 위치 반환 함수 추가
+    sf::FloatRect getGlobalBounds() const; // 플레이어의 전역 바운딩 박스 반환 함수 추가
+
     void die();
     bool isAlive() const;
     void increaseLife(int amount); // 생명 증가 함수
     void loseLife(int amount);
-    int getLife() const;               // 생명 수 확인 함수
+    int getLife() const;         // 생명 수 확인 함수
     bool getIsBig() const;
     void setIsBig(bool big);
     void setInvincible(bool value);
     bool getisInvincible() const;
     FloatRect getHitBox() const;
+
+    // Getter/Setter for m_isOnGround (main.cpp에서 접근하기 위함)
+    bool getIsOnGround() const { return m_isOnGround; }
+    void setIsOnGround(bool onGround) { m_isOnGround = onGround; }
 };

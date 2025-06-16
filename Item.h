@@ -1,6 +1,7 @@
+// item.h
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "Player.h"
+#include "Player.h" // Player 클래스 사용을 위해 포함
 
 class Item {    // 아이템 클래스
 protected:
@@ -20,6 +21,7 @@ public:
     bool isCollected() const;
 
     const Sprite& getSprite() const;
+    void setPosition(float x, float y); // setPosition 함수 선언 추가
 };
 
 class MushroomItem : public Item {  // 버섯 아이템 클래스

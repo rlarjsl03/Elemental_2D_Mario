@@ -50,7 +50,7 @@ int main() {
 
 	std::vector<std::unique_ptr<Enemy>> enemies;    // 적 객체 생성
 	// 적 객체 생성 및 초기 위치 설정
-    enemies.push_back(std::make_unique<Enemy>(cupa, Vector2f(9500.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(cupa, Vector2f(3500.f, groundY)));
     enemies.push_back(std::make_unique<Enemy>(Goomba, Vector2f(3000.f, groundY)));
     enemies.push_back(std::make_unique<Enemy>(Turtle, Vector2f(4000.f, groundY)));
 
@@ -59,8 +59,14 @@ int main() {
     // 아이템 객체 생성
     std::vector<std::unique_ptr<Item>> items;
     items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(900.0f, groundY-75.f))); // 코인
-    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(800.0f, groundY-75.f))); // 버섯
-    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(5000.0f, groundY - 75.f))); // 버섯
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(1000.0f, groundY-75.f))); // 코인
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(1100.0f, groundY-75.f))); // 코인
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(1200.0f, groundY-75.f))); // 코인
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(1300.0f, groundY-75.f))); // 코인
+    items.push_back(std::make_unique<MushroomItem>("RedMushroom.png", Vector2f(800.0f, groundY-75.f))); // 버섯
+    items.push_back(std::make_unique<MushroomItem>("RedMushroom.png", Vector2f(30000.0f, groundY-75.f))); // 버섯
+    items.push_back(std::make_unique<MushroomItem>("RedMushroom.png", Vector2f(15000.0f, groundY-75.f))); // 버섯
+    items.push_back(std::make_unique<GreenMushroomItem>("GreenMushroom.png", Vector2f(10000.0f, groundY - 75.f))); // 버섯
 
 
     // --- sf::View (카메라) 설정 ---
@@ -71,7 +77,7 @@ int main() {
     font.loadFromFile("arial.ttf"); // 폰트 파일은 프로젝트에 있어야 함
     // 맵의 경계 설정: 플레이어가 "계속 갈 수 있게" 하려면 MAP_WIDTH를 매우 크게 설정
     // 이렇게 하면 뷰가 맵 끝에 도달하여 멈추는 일은 거의 없을 것입니다.
-    const float MAP_WIDTH = 10000.f; // 매우 큰 값으로 설정
+    const float MAP_WIDTH = 50000.f; // 매우 큰 값으로 설정
     const float VIEW_WIDTH = gameView.getSize().x;
     const float VIEW_HEIGHT = gameView.getSize().y;
 
@@ -144,6 +150,7 @@ int main() {
                 // "적 위에서 밟은 경우"를 좀 더 엄격하게 체크
                 if (player.getVelocity().y > 0.f && playerBottom <= enemyTop + 5.f) {
                     enemy->takeDamage(100);
+                    player.addScore(100);
                     player.bounceJump();
                 }
                 else {
@@ -151,6 +158,7 @@ int main() {
                         player.setIsBig(false);
                         player.setInvincible(true); // 무적 시작
 						printf("Player is now small.\n"); // 디버깅용 출력
+                        player.addScore(-200);
                     }
                     else {
                         if (player.getLife() > 1) {
@@ -158,6 +166,7 @@ int main() {
                             player.setPosition(200.0f, groundY); // 플레이어 위치 초기화
                             gameView.setCenter(player.getSprite().getPosition().x, gameView.getCenter().y); // 뷰 위치 초기화
                             player.setInvincible(true); // 무적 시작
+                            player.addScore(-500);
                         }
                         else
                             player.die(); // 작은 상태면 죽음
@@ -211,6 +220,14 @@ int main() {
         lifeText.setFillColor(sf::Color::Black);
         lifeText.setPosition(gameView.getCenter().x - 900.f, gameView.getCenter().y - 500.f);
         window.draw(lifeText);
+
+        sf::Text scoreText;
+        scoreText.setFont(font);
+        scoreText.setCharacterSize(30);
+        scoreText.setString("Score: " + std::to_string(player.getScore()));
+        scoreText.setFillColor(sf::Color::Black);
+        scoreText.setPosition(gameView.getCenter().x - 900.f, gameView.getCenter().y - 450.f);
+        window.draw(scoreText);
 
         // 아이템 업데이트(그리기)  및 충돌 처리
         for (auto& item : items) {

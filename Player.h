@@ -33,8 +33,9 @@ private:
     float jumpPower;
     bool isOnGround;
     bool isDead = false;
-    int life = 1; // 초기 생명 수 설정
+    int life = 3; // 초기 생명 수 설정
     bool isBig = false;
+    int score = 1000;
 
 	// 충돌 관련 변수
     bool isInvincible = false;
@@ -54,7 +55,8 @@ public:
     void bounceJump();
     const Sprite& getSprite() const;
     void setScale(float scale);
-    void addScore(int amount);
+    void addScore(int value);
+    int getScore() const;
     // --- 새로 추가할 함수들 ---
     void setPosition(float x, float y); // 플레이어 위치 설정 함수 추가};
     Vector2f getVelocity() const;

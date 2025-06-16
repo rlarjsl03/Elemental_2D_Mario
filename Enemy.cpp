@@ -64,7 +64,7 @@ sf::FloatRect Enemy::getHitBox() const {
     sf::FloatRect bounds = sprite.getGlobalBounds();
     bounds.left += 20.f; // 좌우 여백 제거
     bounds.width -= 20.f;
-    bounds.top += 10.f;  // 위쪽 여백 제거
+    //bounds.top += 10.f;  // 위쪽 여백 제거
     //bounds.height -= 15.f;
     return bounds;
 }

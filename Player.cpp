@@ -6,8 +6,8 @@
 using namespace sf;
 
 Player::Player()
-    : velocity(0.f, 0.f), speed(500.f), gravity(700.f),
-    groundY(920.f), jumpPower(-400.f), isOnGround(false),
+    : velocity(0.f, 0.f), speed(500.f), gravity(900.f),
+    groundY(920.f), jumpPower(-500.f), isOnGround(false),
     currentFrame(100), frameTime(0.1f), frameTimer(0.f), frameCount(6),
     frameWidth(100), frameHeight(106), facingRight(true) {
     if (!texture.loadFromFile("Mario_SpraySheet_padded_top.png")) {
@@ -17,7 +17,6 @@ Player::Player()
     sprite.setTextureRect(IntRect(0, 0, frameWidth, frameHeight));
     sprite.setScale(-1.5f, 1.5f); // 오른쪽을 바라보도록 설정
     sprite.setOrigin(frameWidth / 2.f, 0.f); // 스프라이트의 중심을 왼쪽 아래로 설정(좌우 반전 시 대칭 맞추기)
-    //sprite.setPosition(200.0f, 400.0f);
 }
 // 키 입력 처리
 void Player::handleInput(float deltaTime) {
@@ -144,9 +143,11 @@ const Sprite& Player::getSprite() const {
 void Player::setScale(float scale) {
     sprite.setScale((facingRight ? -1 : 1) * scale, scale);
 }
-
-void Player::addScore(int amount) {
-    // 점수 변수 만들고 += amount 처리
+void Player::addScore(int value) {
+    score += value;
+}
+int Player::getScore() const {
+    return score;
 }
 
 // --- 새로 추가된 함수들 구현 ---
@@ -204,6 +205,7 @@ FloatRect Player::getHitBox() const {
     bounds.left += 20.f; // 좌우 여백 제거
     bounds.width -= 20.f;
     bounds.top += 10.f;  // 위쪽 여백 제거
-    bounds.height -= 5.f;
+    bounds.height -= 12.f;
     return bounds;
 }
+

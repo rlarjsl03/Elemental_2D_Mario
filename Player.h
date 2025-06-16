@@ -63,7 +63,6 @@ public:
     void increaseLife(int amount); // 생명 증가 함수
     void loseLife(int amount);
     int getLife() const;               // 생명 수 확인 함수
-    void grow(); // 버섯 먹고 커질 때 호출할 함수
     bool getIsBig() const;
     void setIsBig(bool big);
     void setInvincible(bool value);

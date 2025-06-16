@@ -97,6 +97,9 @@ void Player::update(float deltaTime) {
             invincibilityTimer = 2.f;
         }
     }
+    else
+		setInvincible(false);   // 무적 상태가 아니면 무적 타이머 초기화
+
     // 바닥 충돌 처리
     // sprite.getScale().y는 스케일 비율입니다. 실제 높이를 얻으려면 텍스처의 원본 높이에 스케일을 곱해야 합니다.
     // sprite.getGlobalBounds().height를 사용하는 것이 더 정확합니다.
@@ -124,14 +127,13 @@ void Player::bounceJump() {
 
 void Player::draw(RenderWindow& window) {
     if (isInvincible) {
-        flickerTimer += 0.016f; // 대충 프레임당 0.016초(60FPS 기준)
-        if (static_cast<int>(flickerTimer / flickerInterval) % 2 == 0) {
-            window.draw(sprite); // 보임
+        // 일정 주기마다 깜빡임: 0.1초 간격
+        if (static_cast<int>(invincibilityTimer * 10) % 2 == 0) {
+            window.draw(sprite); // 깜빡임 효과
         }
-        // else일 땐 안 그림 (깜빡임 효과)
     }
     else {
-        window.draw(sprite); // 무적이 아니면 항상 그림
+        window.draw(sprite);
     }
 }
 
@@ -178,12 +180,12 @@ void Player::loseLife(int amount) {
 int Player::getLife() const {
     return life;
 }
-void Player::grow() {
-    isBig = true;
-    setScale(2.0f);  // 기존과 동일하게 크기도 조절
-}
+
 bool Player::getIsBig() const { return isBig; }
-void Player::setIsBig(bool big) { isBig = big; }
+void Player::setIsBig(bool big) { 
+    isBig = big; 
+    getIsBig(); 
+}
 
 void Player::setInvincible(bool value) {
     isInvincible = value;
@@ -199,9 +201,9 @@ bool Player::getisInvincible() const {
 
 FloatRect Player::getHitBox() const {
     FloatRect bounds = sprite.getGlobalBounds();
-    bounds.left += 10.f; // 좌우 여백 제거
+    bounds.left += 20.f; // 좌우 여백 제거
     bounds.width -= 20.f;
     bounds.top += 10.f;  // 위쪽 여백 제거
-    bounds.height -= 15.f;
+    bounds.height -= 5.f;
     return bounds;
 }

@@ -8,6 +8,7 @@
 #include "Enemy.h"
 #include "Background.h"
 #include "Item.h"
+#include <iostream>
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));  // 랜덤 초기화
@@ -138,6 +139,7 @@ int main() {
                     if (player.getIsBig()) {
                         player.setIsBig(false);
                         player.setInvincible(true); // 무적 시작
+						printf("Player is now small.\n"); // 디버깅용 출력
                     }
                     else {
                         if (player.getLife() > 1) {
@@ -148,8 +150,8 @@ int main() {
                         }
                         else
                             player.die(); // 작은 상태면 죽음
+						printf("Player hit.\n"); // 디버깅용 출력
                     }
-                    
                 }
             }
         }
@@ -194,6 +196,8 @@ int main() {
             item->update(deltaTime);
             if (!item->isCollected() && item->checkCollision(player.getSprite())) {
                 item->applyEffect(player);
+                // Replace the problematic line with the following:
+                std::cout << player.getIsBig() << std::endl;
             }
             item->draw(window);
         }

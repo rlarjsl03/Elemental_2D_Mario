@@ -36,6 +36,8 @@ private:
     int life = 3; // 초기 생명 수 설정
     bool isBig = false;
     int score = 1000;
+    bool isWin = false;
+
 
 	// 충돌 관련 변수
     bool isInvincible = false;
@@ -65,6 +67,8 @@ public:
     void increaseLife(int amount); // 생명 증가 함수
     void loseLife(int amount);
     int getLife() const;               // 생명 수 확인 함수
+    bool getisWin();
+    void setisWin();
     bool getIsBig() const;
     void setIsBig(bool big);
     void setInvincible(bool value);

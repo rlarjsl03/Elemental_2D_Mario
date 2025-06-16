@@ -67,6 +67,7 @@ int main() {
     items.push_back(std::make_unique<MushroomItem>("RedMushroom.png", Vector2f(30000.0f, groundY-75.f))); // 버섯
     items.push_back(std::make_unique<MushroomItem>("RedMushroom.png", Vector2f(15000.0f, groundY-75.f))); // 버섯
     items.push_back(std::make_unique<GreenMushroomItem>("GreenMushroom.png", Vector2f(10000.0f, groundY - 75.f))); // 버섯
+    items.push_back(std::make_unique<FlagItem>("Flag.png", Vector2f(490.0f, groundY - 500.f))); // 깃발
 
 
     // --- sf::View (카메라) 설정 ---
@@ -131,24 +132,20 @@ int main() {
         gameBackground.update(deltaTime, gameView.getCenter(), 0.5f);
 
 
-
+        sf::FloatRect playerHitBox = player.getHitBox();
         // 충돌 체크
-        sf::FloatRect playerBounds = player.getSprite().getGlobalBounds();
 
         for (auto& enemy : enemies) {
             enemy->update(deltaTime, groundY, player.getSprite().getPosition());    // groundY = 920.f
 
-            //sf::FloatRect enemyBounds = enemy->getSprite().getGlobalBounds();
-            sf::FloatRect playerHitBox = player.getHitBox();
-            sf::FloatRect enemyHitBox = enemy->getHitBox();  // 적 클래스에 이 함수가 있다고 했으니
-
+            sf::FloatRect enemyHitBox = enemy->getHitBox();
 
             if (!player.getisInvincible() && playerHitBox.intersects(enemyHitBox)) {
                 float playerBottom = playerHitBox.top + playerHitBox.height;
                 float enemyTop = enemyHitBox.top;
 
                 // "적 위에서 밟은 경우"를 좀 더 엄격하게 체크
-                if (player.getVelocity().y > 0.f && playerBottom <= enemyTop + 5.f) {
+                if (player.getVelocity().y > 0.f && playerBottom <= enemyTop + 10.f) {
                     enemy->takeDamage(100);
                     player.addScore(100);
                     player.bounceJump();
@@ -188,14 +185,24 @@ int main() {
         // 마리오가 죽었을 때 Game Over 창 띄우기
         if (!player.isAlive()) {
             // 죽었을 때 처리: 게임 오버, 화면 정지, 리셋, 종료 등
-            //window.clear(sf::Color::Black);
-
             // 간단한 Game Over 메시지 표시
             if (font.loadFromFile("arial.ttf")) {
                 sf::Text gameOverText("Game Over", font, 100);
                 gameOverText.setFillColor(sf::Color::Red);
                 gameOverText.setPosition(gameView.getCenter().x - 300.f, gameView.getCenter().y - 100.f);
                 window.draw(gameOverText);
+            }
+            window.display();
+            sf::sleep(sf::seconds(3)); // 3초 대기 후 종료
+            window.close();
+            break;
+        }
+        else if (player.getisWin()) {
+            if (font.loadFromFile("arial.ttf")) {
+                sf::Text gameWinText("You Win!!", font, 100);
+                gameWinText.setFillColor(sf::Color::Black);
+                gameWinText.setPosition(gameView.getCenter().x - 300.f, gameView.getCenter().y - 100.f);
+                window.draw(gameWinText);
             }
             window.display();
             sf::sleep(sf::seconds(3)); // 3초 대기 후 종료

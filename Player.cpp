@@ -6,7 +6,7 @@
 using namespace sf;
 
 Player::Player()
-    : velocity(0.f, 0.f), speed(500.f), gravity(900.f),
+    : velocity(0.f, 0.f), speed(500.f), gravity(800.f),
     groundY(920.f), jumpPower(-500.f), isOnGround(false),
     currentFrame(100), frameTime(0.1f), frameTimer(0.f), frameCount(6),
     frameWidth(100), frameHeight(106), facingRight(true) {
@@ -135,7 +135,6 @@ void Player::draw(RenderWindow& window) {
         window.draw(sprite);
     }
 }
-
 const Sprite& Player::getSprite() const {
     return sprite;
 }
@@ -143,19 +142,18 @@ const Sprite& Player::getSprite() const {
 void Player::setScale(float scale) {
     sprite.setScale((facingRight ? -1 : 1) * scale, scale);
 }
+
 void Player::addScore(int value) {
     score += value;
 }
 int Player::getScore() const {
     return score;
 }
-
 // --- 새로 추가된 함수들 구현 ---
 // 플레이어 위치 설정 함수 구현
 void Player::setPosition(float x, float y) {
     sprite.setPosition(x, y);
 }
-
 // 플레이어 현재 속도 반환 함수 구현
 Vector2f Player::getVelocity() const {
     return velocity;
@@ -164,7 +162,6 @@ void Player::die() {
     isDead = true;
     // 죽었을 때 추가로 사운드 재생, 애니메이션 등도 여기에 구현 가능
 }
-
 bool Player::isAlive() const {
     return !isDead;
 }
@@ -181,13 +178,17 @@ void Player::loseLife(int amount) {
 int Player::getLife() const {
     return life;
 }
-
+bool Player::getisWin() {
+    return isWin;
+}
+void Player::setisWin() {
+    isWin = true;
+}
 bool Player::getIsBig() const { return isBig; }
 void Player::setIsBig(bool big) { 
     isBig = big; 
     getIsBig(); 
 }
-
 void Player::setInvincible(bool value) {
     isInvincible = value;
     if (!value) {
@@ -195,11 +196,9 @@ void Player::setInvincible(bool value) {
         flickerTimer = 0.f; // 깜빡임도 초기화
     }
 }
-
 bool Player::getisInvincible() const {
     return isInvincible;
 }
-
 FloatRect Player::getHitBox() const {
     FloatRect bounds = sprite.getGlobalBounds();
     bounds.left += 20.f; // 좌우 여백 제거

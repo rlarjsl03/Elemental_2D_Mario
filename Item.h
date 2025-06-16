@@ -27,6 +27,11 @@ public:
     MushroomItem(const std::string& texturePath, sf::Vector2f position);
     void applyEffect(Player& player) override;
 };
+class GreenMushroomItem : public Item {  // 녹색 버섯 아이템 클래스
+public:
+    GreenMushroomItem(const std::string& texturePath, sf::Vector2f position);
+    void applyEffect(Player& player) override;
+};
 
 class CoinItem : public Item {  // 동전 아이템 클래스
 public:

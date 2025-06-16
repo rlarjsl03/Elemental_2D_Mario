@@ -38,20 +38,25 @@ int main() {
 
 	std::vector<std::unique_ptr<Enemy>> enemies;    // 적 객체 생성
 	// 적 객체 생성 및 초기 위치 설정
-    enemies.push_back(std::make_unique<Enemy>(cupa, Vector2f(300.f, groundY)));
-    enemies.push_back(std::make_unique<Enemy>(Goomba, Vector2f(700.f, groundY)));
-    enemies.push_back(std::make_unique<Enemy>(Turtle, Vector2f(1100.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(cupa, Vector2f(9500.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(Goomba, Vector2f(3000.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(Turtle, Vector2f(4000.f, groundY)));
 
     Clock clock;
 
     // 아이템 객체 생성
     std::vector<std::unique_ptr<Item>> items;
-    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(900.0f, groundY))); // 코인
-    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(800.0f, groundY))); // 버섯
+    items.push_back(std::make_unique<CoinItem>("Coin.png", Vector2f(900.0f, groundY-75.f))); // 코인
+    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(800.0f, groundY-75.f))); // 버섯
+    items.push_back(std::make_unique<MushroomItem>("Mushroom.png", Vector2f(5000.0f, groundY - 75.f))); // 버섯
+
 
     // --- sf::View (카메라) 설정 ---
     View gameView(FloatRect(0, 0, 1920, 1080)); // 윈도우와 동일한 크기의 뷰 생성
-
+    
+    // 폰트 생성
+    sf::Font font;
+    font.loadFromFile("arial.ttf"); // 폰트 파일은 프로젝트에 있어야 함
     // 맵의 경계 설정: 플레이어가 "계속 갈 수 있게" 하려면 MAP_WIDTH를 매우 크게 설정
     // 이렇게 하면 뷰가 맵 끝에 도달하여 멈추는 일은 거의 없을 것입니다.
     const float MAP_WIDTH = 10000.f; // 매우 큰 값으로 설정
@@ -83,7 +88,7 @@ int main() {
         // --- View (카메라) 업데이트 및 경계 제한 ---
         // 뷰의 목표 중심 X 좌표를 플레이어의 X 위치로 설정
         // 플레이어의 실제 X 위치를 얻기 위해 getSprite().getPosition().x 사용
-        float targetViewCenterX = player.getSprite().getPosition().x;
+        float targetViewCenterX = player.getSprite().getPosition().x + 400.f;
         float targetViewCenterY = VIEW_HEIGHT / 2.f;
 
         // 뷰의 X 위치를 맵 경계 내로 제한
@@ -115,28 +120,74 @@ int main() {
         for (auto& enemy : enemies) {
             enemy->update(deltaTime, groundY);    // groundY = 920.f
 
-            sf::FloatRect enemyBounds = enemy->getSprite().getGlobalBounds();
+            //sf::FloatRect enemyBounds = enemy->getSprite().getGlobalBounds();
+            sf::FloatRect playerHitBox = player.getHitBox();
+            sf::FloatRect enemyHitBox = enemy->getHitBox();  // 적 클래스에 이 함수가 있다고 했으니
 
-            if (playerBounds.intersects(enemyBounds)) {
-                float playerBottom = playerBounds.top + playerBounds.height;
-                float enemyTop = enemyBounds.top;
 
-                if (player.getVelocity().y > 0.f && playerBottom < enemyTop + 10.f) {
-                    enemy->takeDamage(100); // 적 제거
-                    player.bounceJump();    // 튕기기
+            if (!player.getisInvincible() && playerHitBox.intersects(enemyHitBox)) {
+                float playerBottom = playerHitBox.top + playerHitBox.height;
+                float enemyTop = enemyHitBox.top;
+
+                // "적 위에서 밟은 경우"를 좀 더 엄격하게 체크
+                if (player.getVelocity().y > 0.f && playerBottom <= enemyTop + 5.f) {
+                    enemy->takeDamage(100);
+                    player.bounceJump();
                 }
                 else {
-                    player.takeDamage(10);
+                    if (player.getIsBig()) {
+                        player.setIsBig(false);
+                        player.setInvincible(true); // 무적 시작
+                    }
+                    else {
+                        if (player.getLife() > 1) {
+                            player.loseLife(1); // 생명 감소
+                            player.setPosition(200.0f, groundY); // 플레이어 위치 초기화
+                            gameView.setCenter(player.getSprite().getPosition().x, gameView.getCenter().y); // 뷰 위치 초기화
+                            player.setInvincible(true); // 무적 시작
+                        }
+                        else
+                            player.die(); // 작은 상태면 죽음
+                    }
+                    
                 }
             }
         }
+        // 마리오가 죽었을 때 Game Over 창 띄우기
+        if (!player.isAlive()) {
+            // 죽었을 때 처리: 게임 오버, 화면 정지, 리셋, 종료 등
+            //window.clear(sf::Color::Black);
 
+            // 간단한 Game Over 메시지 표시
+            if (font.loadFromFile("arial.ttf")) {
+                sf::Text gameOverText("Game Over", font, 100);
+                gameOverText.setFillColor(sf::Color::Red);
+                gameOverText.setPosition(gameView.getCenter().x - 300.f, gameView.getCenter().y - 100.f);
+                window.draw(gameOverText);
+            }
+            window.display();
+            sf::sleep(sf::seconds(3)); // 3초 대기 후 종료
+            window.close();
+            break;
+        }
+
+
+		// 배경 초기화
         window.clear(sf::Color::White);
         gameBackground.draw(window); // 배경 그리기
         player.draw(window);    // 플레이어 그리기
         // 적 그리기 및 업데이트
         for (auto& enemy : enemies)
             enemy->draw(window);
+
+        // 플레이어의 생명 표시
+        sf::Text lifeText;
+        lifeText.setFont(font);
+        lifeText.setCharacterSize(30);
+        lifeText.setString("Life: " + std::to_string(player.getLife()));
+        lifeText.setFillColor(sf::Color::Black);
+        lifeText.setPosition(gameView.getCenter().x - 900.f, gameView.getCenter().y - 500.f);
+        window.draw(lifeText);
 
         // 아이템 업데이트(그리기)  및 충돌 처리
         for (auto& item : items) {

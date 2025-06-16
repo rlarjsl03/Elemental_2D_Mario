@@ -64,7 +64,7 @@ int main() {
 
     // --- 적 객체 생성 및 벡터에 추가 ---
     std::vector<std::unique_ptr<Enemy>> enemies;
-    enemies.push_back(std::make_unique<Enemy>(cupaTexture, sf::Vector2f(9300.f, groundY)));
+    enemies.push_back(std::make_unique<Enemy>(cupaTexture, sf::Vector2f(9500.f, groundY)));
     enemies.push_back(std::make_unique<Enemy>(goombaTexture, sf::Vector2f(3000.f, groundY)));
     enemies.push_back(std::make_unique<Enemy>(turtleTexture, sf::Vector2f(4000.f, groundY)));
 

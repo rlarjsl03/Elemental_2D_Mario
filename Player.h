@@ -1,6 +1,10 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector> // std::vector를 사용하므로 필요합니다.
+#include <memory> // std::unique_ptr를 사용하기 위해 추가
+
+// GameObject 클래스 전방 선언 (순환 참조 방지)
+class GameObject;
 
 using namespace sf;
 
@@ -70,7 +74,7 @@ public:
     bool isAlive() const;
     void increaseLife(int amount); // 생명 증가 함수
     void loseLife(int amount);
-    int getLife() const;         // 생명 수 확인 함수
+    int getLife() const;        // 생명 수 확인 함수
     bool getIsBig() const;
     void setIsBig(bool big);
     void setInvincible(bool value);
@@ -80,4 +84,8 @@ public:
     // Getter/Setter for m_isOnGround (main.cpp에서 접근하기 위함)
     bool getIsOnGround() const { return m_isOnGround; }
     void setIsOnGround(bool onGround) { m_isOnGround = onGround; }
+
+    // --- 새로 추가된 함수: 게임 오브젝트와의 충돌 처리 ---
+    // 플레이어가 플랫폼, 파이프 등 GameObject 위로 착지하는 것을 처리합니다.
+    void checkPlatformCollision(float deltaTime, const std::vector<std::unique_ptr<GameObject>>& gameObjects);
 };

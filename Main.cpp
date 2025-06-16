@@ -6,6 +6,7 @@
 #include <cstdlib>   // std::srand, rand 사용
 #include <ctime>     // std::time 사용
 #include <iostream>  // std::cerr, std::cout 사용
+#include <algorithm> // std::remove_if 를 위해 추가
 
 // 커스텀 클래스 헤더 파일 포함
 #include "Player.h"
@@ -84,10 +85,10 @@ int main() {
     // 이 값을 정확히 입력해야 setPosition 계산이 올바르게 됩니다.
     const float ORIGINAL_PIPE_HEIGHT = 720.f;     // "pipe.png"의 실제 픽셀 높이 (예: 160)
     const float ORIGINAL_PIPE_WIDTH = 564.f;      // "pipe.png"의 실제 픽셀 너비 (예: 112)
-    const float ORIGINAL_BLOCK_HEIGHT = 336.f;     // "mysteryblock.png", "deadblock.png"의 실제 픽셀 높이 (예: 70)
-    const float ORIGINAL_BLOCK_WIDTH = 336.f;      // "mysteryblock.png"의 실제 픽셀 너비 (예: 70)
-    const float ORIGINAL_PLATFORM_HEIGHT = 336.f;  // "platform.png"의 실제 픽셀 높이 (예: 70)
-    const float ORIGINAL_PLATFORM_WIDTH = 336.f;   // "platform.png"의 실제 픽셀 너비 (예: 70)
+    const float ORIGINAL_BLOCK_HEIGHT = 336.f;    // "mysteryblock.png", "deadblock.png"의 실제 픽셀 높이 (예: 70)
+    const float ORIGINAL_BLOCK_WIDTH = 336.f;     // "mysteryblock.png"의 실제 픽셀 너비 (예: 70)
+    const float ORIGINAL_PLATFORM_HEIGHT = 336.f; // "platform.png"의 실제 픽셀 높이 (예: 70)
+    const float ORIGINAL_PLATFORM_WIDTH = 336.f;  // "platform.png"의 실제 픽셀 너비 (예: 70)
 
 
     // --- 파이프 추가 및 크기/위치 조절 (수동 Y 위치 조정) ---
@@ -254,6 +255,10 @@ int main() {
         player.handleInput(deltaTime);
         player.update(deltaTime);
 
+        // --- 플레이어와 게임 오브젝트(파이프, 플랫폼, 미스터리 블록) 충돌 처리 ---
+        // 이 부분은 Player::checkPlatformCollision() 함수로 이동되었습니다.
+        player.checkPlatformCollision(deltaTime, gameObjects); // 플레이어의 지면 충돌 로직 호출
+
         // --- View (카메라) 업데이트 및 경계 제한 ---
         // 뷰의 목표 중심 X 좌표를 플레이어의 X 위치에 400px 오프셋을 더한 값으로 설정
         float targetViewCenterX = player.getSprite().getPosition().x + 400.f;
@@ -329,33 +334,13 @@ int main() {
             }
         }
 
-        // --- 플레이어와 게임 오브젝트(파이프, 플랫폼, 미스터리 블록) 충돌 처리 ---
-        for (auto& obj : gameObjects) { // 모든 게임 오브젝트에 대해 반복
-            sf::FloatRect objBounds = obj->getGlobalBounds(); // 현재 오브젝트의 충돌 영역
-
-            // 1. 파이프 또는 플랫폼 위에 착지하는 경우 (점프해서 밟고 올라설 수 있도록)
-            // 플레이어가 아래로 떨어지는 중(getVelocity().y > 0)이고,
-            // 플레이어의 히트박스가 오브젝트의 바운딩 박스와 겹치며,
-            // 플레이어가 지난 프레임에는 오브젝트 상단 '위에' 있었음을 확인하여 정확한 착지를 감지합니다.
-            if (player.getVelocity().y > 0 &&
-                playerHitBox.intersects(objBounds) &&
-                // 플레이어의 바닥이 오브젝트 상단에 닿았는지 확인 (deltaTime을 이용해 이전 위치 추정)
-                (playerHitBox.top + playerHitBox.height - (player.getVelocity().y * deltaTime)) <= objBounds.top) {
-
-                // 현재 오브젝트가 Pipe 또는 Platform 타입인지 확인합니다.
-                if (dynamic_cast<Pipe*>(obj.get()) || dynamic_cast<Platform*>(obj.get())) {
-                    player.setPosition(player.getPosition().x, objBounds.top - player.getGlobalBounds().height); // 플레이어의 Y 위치를 오브젝트 상단에 맞춥니다.
-                    player.setVelocityY(0);    // 플레이어의 수직 속도를 0으로 설정하여 더 이상 떨어지지 않게 합니다.
-                    player.setIsOnGround(true); // 플레이어가 땅(오브젝트 위)에 닿은 상태로 설정합니다.
-                }
-            }
-
-            // 2. 물음표 블록을 아래에서 머리로 치는 경우
-            // 현재 오브젝트가 MysteryBlock 타입인지 확인하고, 그렇다면 해당 포인터를 얻습니다.
+        // --- 물음표 블록을 아래에서 머리로 치는 경우 (main.cpp에 그대로 유지) ---
+        // 이 로직은 아이템을 생성하고 items 벡터에 추가해야 하므로 Player 클래스 내부에 두기 어렵습니다.
+        for (auto& obj : gameObjects) {
             if (MysteryBlock* mysteryBlock = dynamic_cast<MysteryBlock*>(obj.get())) {
-                // 블록이 활성 상태이고, 플레이어가 위로 점프하는 중(getVelocity().y < 0)이며,
-                // 플레이어의 히트박스가 블록과 겹치고,
-                // 플레이어의 머리 부분(hitBox의 상단)이 블록의 아랫부분에 닿았는지 확인합니다.
+                sf::FloatRect objBounds = obj->getGlobalBounds();
+                sf::FloatRect playerHitBox = player.getHitBox(); // 플레이어의 히트박스 가져오기
+
                 if (mysteryBlock->isActive() &&
                     player.getVelocity().y < 0 && // 플레이어가 위로 점프하는 중이어야 함
                     playerHitBox.intersects(objBounds) &&
@@ -363,10 +348,10 @@ int main() {
                     playerHitBox.top <= objBounds.top + objBounds.height &&
                     playerHitBox.top + playerHitBox.height > objBounds.top + objBounds.height - 10.f) {
 
-                    mysteryBlock->hit(); // 물음표 블록의 hit() 함수를 호출하여 상태를 변경합니다.
-                    std::unique_ptr<Item> spawnedItem = mysteryBlock->spawnItem(); // 블록에서 아이템을 생성합니다.
+                    mysteryBlock->hit();
+                    std::unique_ptr<Item> spawnedItem = mysteryBlock->spawnItem();
                     if (spawnedItem) {
-                        items.push_back(std::move(spawnedItem)); // 생성된 아이템을 전역 아이템 벡터에 추가합니다.
+                        items.push_back(std::move(spawnedItem));
                     }
                     player.setVelocityY(0); // 블록을 치면 플레이어의 수직 속도를 0으로 만들어 더 이상 위로 올라가지 않게 합니다.
                 }
@@ -380,7 +365,7 @@ int main() {
 
             // 간단한 Game Over 메시지 표시
             sf::Text gameOverText("Game Over", font, 100); // 폰트와 크기 설정
-            gameOverText.setFillColor(sf::Color::Red);       // 텍스트 색상 빨간색
+            gameOverText.setFillColor(sf::Color::Red);        // 텍스트 색상 빨간색
             // 뷰의 중앙에 메시지 위치 설정
             gameOverText.setPosition(gameView.getCenter().x - gameOverText.getGlobalBounds().width / 2.f,
                 gameView.getCenter().y - gameOverText.getGlobalBounds().height / 2.f);
@@ -394,7 +379,7 @@ int main() {
 
         // --- 렌더링 (그리기) ---
         window.clear(sf::Color::White); // 배경을 흰색으로 지웁니다. (사실상 배경 이미지로 덮힘)
-        gameBackground.draw(window);      // 배경을 그립니다.
+        gameBackground.draw(window);       // 배경을 그립니다.
 
         // 게임 오브젝트(파이프, 플랫폼, 미스터리 블록) 그리기
         // 플레이어보다 먼저 그려야 플레이어가 오브젝트 위에 올라선 것처럼 보입니다.

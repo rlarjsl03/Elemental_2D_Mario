@@ -4,6 +4,11 @@
 #include <cmath>     // std::abs를 위해 포함
 #include <iostream>  // 디버깅용
 
+// GameObject.h를 여기에 포함하여 GameObject 클래스의 정의를 가져옵니다.
+// Item.h도 필요할 수 있으므로 포함합니다.
+#include "GameObject.h"
+#include "Item.h" // CoinItem, MushroomItem 등의 정의를 위해 필요할 수 있습니다.
+
 using namespace sf;
 
 Player::Player()
@@ -14,7 +19,7 @@ Player::Player()
     frameWidth(100), frameHeight(106), facingRight(true),
     score(0), drawSprite(true), isDead(false), life(1), isBig(false), // 추가된 변수 초기화
     isInvincible(false), invincibilityTimer(0.f), flickerTimer(0.f) // 무적 관련 변수 초기화
-    ,col(0), row(0)
+    , col(0), row(0)
 {
     if (!texture.loadFromFile("Mario_SpraySheet_padded_top.png")) {
         throw std::runtime_error("이미지를 불러올 수 없습니다: Mario_SpraySheet_padded_top.png");
@@ -38,7 +43,8 @@ void Player::handleInput(float deltaTime) {
     }
 
     m_velocity.x = direction.x * speed; // 플레이어의 x 속도 업데이트
-    sprite.move(direction * speed * deltaTime);
+    // X축 이동은 여기서 바로 적용하여 즉각적인 반응을 줍니다.
+    sprite.move(m_velocity.x * deltaTime, 0.f);
 
     // 방향에 따라 스프라이트 반전
     if (facingRight)
@@ -48,7 +54,7 @@ void Player::handleInput(float deltaTime) {
 
     if (Keyboard::isKeyPressed(Keyboard::Space) && m_isOnGround) { // m_isOnGround 사용
         m_velocity.y = jumpPower; // m_velocity 사용
-        m_isOnGround = false; // m_isOnGround 사용
+        m_isOnGround = false; // 점프하면 바로 지상 상태 해제
     }
     else if (Keyboard::isKeyPressed(Keyboard::Escape)) {
         exit(0); // 게임 종료
@@ -112,19 +118,57 @@ void Player::update(float deltaTime) {
         }
     }
 
-    // 바닥 충돌 처리
-    float bottom = sprite.getPosition().y + sprite.getGlobalBounds().height;
-    if (bottom >= groundY) {
-        sprite.setPosition(sprite.getPosition().x, groundY - sprite.getGlobalBounds().height);
-        m_velocity.y = 0; // m_velocity 사용
-        m_isOnGround = true; // m_isOnGround 사용
-    }
-    // else 문을 제거하여 공중에 있을 때 m_isOnGround가 false로 유지되도록 합니다.
-    // 하지만 점프 등으로 바닥에서 떨어질 때는 `m_isOnGround = false;`가 명시적으로 호출되어야 합니다.
-    // 현재 `handleInput`에서 점프 시 `m_isOnGround = false;`를 호출하고 있으므로 괜찮습니다.
+    // --- 기존 지면 충돌 처리 제거 ---
+    // 이제 이 부분은 checkPlatformCollision 함수에서 처리합니다.
+    // float bottom = sprite.getPosition().y + sprite.getGlobalBounds().height;
+    // if (bottom >= groundY) {
+    //     sprite.setPosition(sprite.getPosition().x, groundY - sprite.getGlobalBounds().height);
+    //     m_velocity.y = 0; // m_velocity 사용
+    //     m_isOnGround = true; // m_isOnGround 사용
+    // }
 
     updateAnimation(deltaTime);
 }
+
+// --- 새로 추가된 checkPlatformCollision 함수 구현 ---
+void Player::checkPlatformCollision(float deltaTime, const std::vector<std::unique_ptr<GameObject>>& gameObjects) {
+    sf::FloatRect playerBounds = getGlobalBounds(); // 플레이어의 현재 바운딩 박스
+
+    // 우선 플레이어가 공중에 있다고 가정하고, 충돌 발생 시 지상 상태로 변경
+    bool foundGround = false;
+
+    // 먼저 지면(groundY)과의 충돌을 확인합니다.
+    float playerBottom = playerBounds.top + playerBounds.height;
+    if (playerBottom >= groundY) {
+        setPosition(getPosition().x, groundY - playerBounds.height); // 지면에 정확히 맞춤
+        m_velocity.y = 0; // 수직 속도를 0으로 설정
+        foundGround = true; // 지면에 닿았음을 표시
+    }
+
+    // 그 다음, 각 게임 오브젝트와의 충돌을 확인합니다.
+    for (auto& obj : gameObjects) {
+        sf::FloatRect objBounds = obj->getGlobalBounds(); // 오브젝트의 바운딩 박스
+
+        // 플레이어가 아래로 떨어지는 중이고, 오브젝트와 겹칠 때
+        if (m_velocity.y >= 0 && playerBounds.intersects(objBounds)) {
+            // 플레이어의 바닥이 오브젝트의 상단에 닿았는지 확인 (정확한 착지 판정)
+            // 이전 프레임에는 플레이어의 바닥이 오브젝트 상단 위에 있었고,
+            // 현재 프레임에는 오브젝트 상단을 넘어섰을 경우를 감지합니다.
+            if ((playerBounds.top + playerBounds.height - (m_velocity.y * deltaTime)) <= objBounds.top && // 이전 위치가 오브젝트 위
+                playerBounds.top + playerBounds.height >= objBounds.top) // 현재 위치가 오브젝트와 겹침
+            {
+                // 플레이어의 Y 위치를 오브젝트 상단에 정확히 맞춥니다.
+                setPosition(getPosition().x, objBounds.top - playerBounds.height);
+                m_velocity.y = 0; // 수직 속도 0으로 설정
+                foundGround = true; // 지상에 닿았음을 표시
+                break; // 하나의 플랫폼에 착지했으면 더 이상 다른 오브젝트를 확인할 필요 없음
+            }
+        }
+    }
+    // 최종적으로 m_isOnGround 상태를 업데이트합니다.
+    m_isOnGround = foundGround;
+}
+
 
 void Player::takeDamage(int amount) {
     // 플레이어 데미지 처리 (필요시 구현)
